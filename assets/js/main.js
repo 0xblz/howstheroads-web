@@ -182,7 +182,7 @@ fetch(`https://api.weather.gov/points/${lat},${lon}`, {
         });
         
         // Update the temperature display with the same format as iOS
-        document.getElementById('temperature-text').textContent = `${emoji} ${tempF}°f in kc`;
+        document.getElementById('temperature-text').textContent = `${emoji} ${tempF}°f in KC`;
     });
 })
 .catch(error => {
