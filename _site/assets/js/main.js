@@ -56,7 +56,7 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
                 
                 // Build the HTML for this camera item
                 videoItem.innerHTML = `
-                    <h2><a href="${mapsUrl}" target="_blank" title="View on map"><i class="fa-solid fa-location-dot"></i> ${video.name}</a></h2>
+                    <h2><a href="#" data-maps-url="${mapsUrl}" data-location-name="${video.name}" class="map-link" title="View on map"><i class="fa-solid fa-location-dot"></i> ${video.name}</a></h2>
                     <video controls crossorigin playsinline autoplay muted>
                         <source src="${video.url}" type="application/x-mpegURL">
                     </video>
@@ -66,6 +66,13 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
                 // Initialize video player for this camera
                 const videoElement = videoItem.querySelector('video');
                 initializeVideoPlayer(videoElement);
+                
+                // Add click event for the map link
+                const mapLink = videoItem.querySelector('.map-link');
+                mapLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openMapModal(this.getAttribute('data-maps-url'), this.getAttribute('data-location-name'));
+                });
             });
             
             // Update the count of loaded videos
@@ -233,4 +240,143 @@ function determineWeatherEmoji(shortForecast, isNight) {
         // Clear or sunny
         return isNight ? '��' : '☀️';
     }
+}
+
+// ===== MAP MODAL FUNCTIONALITY =====
+
+/**
+ * Open the map modal with the given URL and location name
+ * @param {string} mapUrl - The Google Maps URL to load in the iframe
+ * @param {string} locationName - The name of the location to display
+ */
+function openMapModal(mapUrl, locationName) {
+    // Get modal elements
+    const modal = document.getElementById('map-modal');
+    const iframe = document.getElementById('map-iframe');
+    const title = document.getElementById('map-modal-title');
+    
+    // Extract coordinates from the URL
+    const urlParams = new URLSearchParams(mapUrl.split('?')[1]);
+    const coordinates = urlParams.get('q');
+    const [lat, lng] = coordinates.split(',');
+    
+    // Create a direct URL to Google Maps with a clean view
+    // Using center parameter to focus on the location without a pin
+    const embedUrl = `https://www.google.com/maps?ll=${lat},${lng}&z=15&output=embed`;
+    
+    // Set the iframe source and title
+    iframe.src = embedUrl;
+    title.textContent = locationName;
+    
+    // Show the modal
+    modal.style.display = 'flex';
+    
+    // Prevent scrolling on the body
+    document.body.style.overflow = 'hidden';
+}
+
+// Add event listener to close the modal
+document.addEventListener('DOMContentLoaded', function() {
+    const closeButton = document.getElementById('map-modal-close');
+    const modal = document.getElementById('map-modal');
+    
+    // Close when the close button is clicked
+    closeButton.addEventListener('click', function() {
+        closeMapModal();
+    });
+    
+    // Close when clicking outside the modal content
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeMapModal();
+        }
+    });
+    
+    // Close when pressing Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            closeMapModal();
+        }
+    });
+});
+
+/**
+ * Close the map modal
+ */
+function closeMapModal() {
+    const modal = document.getElementById('map-modal');
+    const iframe = document.getElementById('map-iframe');
+    
+    // Hide the modal
+    modal.style.display = 'none';
+    
+    // Clear the iframe source to stop loading
+    iframe.src = '';
+    
+    // Restore scrolling on the body
+    document.body.style.overflow = '';
+}
+
+// ===== WEATHER MODAL FUNCTIONALITY =====
+
+/**
+ * Open the weather modal with the NOAA forecast for Kansas City
+ */
+function openWeatherModal() {
+    // Get modal elements
+    const modal = document.getElementById('weather-modal');
+    const iframe = document.getElementById('weather-iframe');
+    
+    // Set the iframe source to the NOAA forecast page for Kansas City
+    iframe.src = 'https://forecast.weather.gov/MapClick.php?CityName=Kansas+City&state=MO&site=EAX&textField1=39.0904&textField2=-94.5837&e=0';
+    
+    // Show the modal
+    modal.style.display = 'flex';
+    
+    // Prevent scrolling on the body
+    document.body.style.overflow = 'hidden';
+}
+
+// Add event listener to close the weather modal
+document.addEventListener('DOMContentLoaded', function() {
+    const closeButton = document.getElementById('weather-modal-close');
+    const modal = document.getElementById('weather-modal');
+    
+    if (closeButton && modal) {
+        // Close when the close button is clicked
+        closeButton.addEventListener('click', function() {
+            closeWeatherModal();
+        });
+        
+        // Close when clicking outside the modal content
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeWeatherModal();
+            }
+        });
+        
+        // Close when pressing Escape key (already handled by the map modal event listener)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                closeWeatherModal();
+            }
+        });
+    }
+});
+
+/**
+ * Close the weather modal
+ */
+function closeWeatherModal() {
+    const modal = document.getElementById('weather-modal');
+    const iframe = document.getElementById('weather-iframe');
+    
+    // Hide the modal
+    modal.style.display = 'none';
+    
+    // Clear the iframe source to stop loading
+    iframe.src = '';
+    
+    // Restore scrolling on the body
+    document.body.style.overflow = '';
 } 
