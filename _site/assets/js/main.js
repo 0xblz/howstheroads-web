@@ -238,7 +238,7 @@ function determineWeatherEmoji(shortForecast, isNight) {
         }
     } else {
         // Clear or sunny
-        return isNight ? '��' : '☀️';
+        return isNight ? '🌙' : '☀️';
     }
 }
 
