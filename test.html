@@ -1,0 +1,28 @@
+---
+layout: default
+noindex: true
+---
+
+<!-- Meta tags to prevent search engine indexing -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+
+<div class="test-page-header">
+    <h1>Cam Test</h1>    
+    <div class="search-container">
+        <div class="search-input-wrapper">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" id="camera-search" class="search-input" placeholder="Search for cameras..." autocomplete="off">
+            <button id="clear-search" class="clear-search-btn" style="display: none;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="loading-message" class="loading-message">
+    <h3>loading kansas city...</h3>
+</div>
+<div class="video-container" id="video-container" style="display: none;">
+    <!-- Video items will be dynamically inserted here -->
+</div> 

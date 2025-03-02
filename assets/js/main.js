@@ -2,8 +2,8 @@
  * Main application script for How's The Roads
  * This script handles:
  * 1. Fetching and displaying traffic camera feeds
- * 2. Implementing the load more functionality
- * 3. Fetching and displaying current weather conditions
+ * 2. Camera and map lightbox functionality
+ * 3. Search functionality for cameras
  */
 
 // ===== TRAFFIC CAMERA FUNCTIONALITY =====
@@ -12,7 +12,7 @@
  * Fetch traffic camera data from JSON endpoint and populate the video container
  * The JSON contains an array of camera objects with name, URL, latitude, and longitude
  */
-fetch('https://0xblz.github.io/docs/kansascity.json')
+fetch('https://0xblz.github.io/docs/kansascity_all.json')
     .then(response => response.json())
     .then(data => {
         // Extract the videos array from the response
@@ -26,357 +26,389 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
         // Get DOM references
         const videoContainer = document.getElementById('video-container');
         const loadingMessage = document.getElementById('loading-message');
-        const loadMoreContainer = document.getElementById('load-more-container');
-        const loadMoreBtn = document.getElementById('load-more-btn');
+        const searchInput = document.getElementById('camera-search');
+        const clearSearchBtn = document.getElementById('clear-search');
         
-        // Store all videos for pagination
-        const allVideos = [...videos];
+        // If we're not on the test page, don't proceed
+        if (!videoContainer || !loadingMessage) {
+            return;
+        }
         
-        // Pagination configuration
-        const videosPerLoad = 9; // Number of videos to show initially and on each "Load More" click
-        let videosLoaded = 0; // Track how many videos have been loaded so far
+        // Create camera modal elements
+        const cameraModal = document.createElement('div');
+        cameraModal.className = 'camera-modal';
+        cameraModal.style.display = 'none';
+        cameraModal.style.position = 'fixed';
+        cameraModal.style.top = '0';
+        cameraModal.style.left = '0';
+        cameraModal.style.width = '100%';
+        cameraModal.style.height = '100%';
+        cameraModal.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+        cameraModal.style.zIndex = '1000';
+        cameraModal.style.display = 'none';
+        cameraModal.style.justifyContent = 'center';
+        cameraModal.style.alignItems = 'center';
+        cameraModal.style.padding = '1rem';
+        
+        const cameraModalContent = document.createElement('div');
+        cameraModalContent.className = 'camera-modal-content';
+        cameraModalContent.style.backgroundColor = 'black';
+        cameraModalContent.style.borderRadius = '0.75rem';
+        cameraModalContent.style.width = '100%';
+        cameraModalContent.style.maxWidth = '900px';
+        cameraModalContent.style.maxHeight = '90vh';
+        cameraModalContent.style.overflow = 'hidden';
+        cameraModalContent.style.position = 'relative';
+        cameraModalContent.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.5)';
+        cameraModalContent.style.display = 'flex';
+        cameraModalContent.style.flexDirection = 'column';
+        
+        const cameraModalClose = document.createElement('span');
+        cameraModalClose.className = 'camera-modal-close';
+        cameraModalClose.innerHTML = '&times;';
+        cameraModalClose.style.position = 'absolute';
+        cameraModalClose.style.top = '0.5rem';
+        cameraModalClose.style.right = '0.75rem';
+        cameraModalClose.style.fontSize = '2rem';
+        cameraModalClose.style.color = 'white';
+        cameraModalClose.style.cursor = 'pointer';
+        cameraModalClose.style.zIndex = '10';
+        cameraModalClose.style.transition = 'all 0.15s ease-in-out';
+        cameraModalClose.addEventListener('click', function() {
+            closeModal(cameraModal, cameraModalVideo);
+        });
+        
+        const cameraModalTitle = document.createElement('h2');
+        cameraModalTitle.className = 'camera-modal-title';
+        cameraModalTitle.style.padding = '1rem';
+        cameraModalTitle.style.margin = '0';
+        cameraModalTitle.style.backgroundColor = 'rgb(32, 24, 192)';
+        cameraModalTitle.style.color = 'white';
+        cameraModalTitle.style.fontSize = '1.2rem';
+        cameraModalTitle.style.textAlign = 'center';
+        
+        const cameraModalVideo = document.createElement('video');
+        cameraModalVideo.className = 'camera-modal-video';
+        cameraModalVideo.style.width = '100%';
+        cameraModalVideo.style.height = '60vh';
+        cameraModalVideo.style.display = 'block';
+        cameraModalVideo.style.backgroundColor = '#000';
+        cameraModalVideo.style.minHeight = '50vh';
+        cameraModalVideo.style.objectFit = 'contain';
+        cameraModalVideo.setAttribute('controls', '');
+        cameraModalVideo.setAttribute('autoplay', '');
+        cameraModalVideo.setAttribute('playsinline', '');
+        cameraModalVideo.setAttribute('muted', '');
+        
+        cameraModalContent.appendChild(cameraModalClose);
+        cameraModalContent.appendChild(cameraModalTitle);
+        cameraModalContent.appendChild(cameraModalVideo);
+        cameraModal.appendChild(cameraModalContent);
+        
+        // Add camera modal to the document body
+        document.body.appendChild(cameraModal);
+        
+        // Create map modal elements
+        const mapModal = document.createElement('div');
+        mapModal.className = 'camera-modal map-modal'; // Reuse camera-modal styles
+        mapModal.style.display = 'none';
+        mapModal.style.position = 'fixed';
+        mapModal.style.top = '0';
+        mapModal.style.left = '0';
+        mapModal.style.width = '100%';
+        mapModal.style.height = '100%';
+        mapModal.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+        mapModal.style.zIndex = '1000';
+        mapModal.style.display = 'none';
+        mapModal.style.justifyContent = 'center';
+        mapModal.style.alignItems = 'center';
+        mapModal.style.padding = '1rem';
+        
+        const mapModalContent = document.createElement('div');
+        mapModalContent.className = 'camera-modal-content';
+        mapModalContent.style.backgroundColor = 'black';
+        mapModalContent.style.borderRadius = '0.75rem';
+        mapModalContent.style.width = '100%';
+        mapModalContent.style.maxWidth = '900px';
+        mapModalContent.style.maxHeight = '90vh';
+        mapModalContent.style.overflow = 'hidden';
+        mapModalContent.style.position = 'relative';
+        mapModalContent.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.5)';
+        mapModalContent.style.display = 'flex';
+        mapModalContent.style.flexDirection = 'column';
+        
+        const mapModalClose = document.createElement('span');
+        mapModalClose.className = 'camera-modal-close';
+        mapModalClose.innerHTML = '&times;';
+        mapModalClose.style.position = 'absolute';
+        mapModalClose.style.top = '0.5rem';
+        mapModalClose.style.right = '0.75rem';
+        mapModalClose.style.fontSize = '2rem';
+        mapModalClose.style.color = 'white';
+        mapModalClose.style.cursor = 'pointer';
+        mapModalClose.style.zIndex = '10';
+        mapModalClose.style.transition = 'all 0.15s ease-in-out';
+        mapModalClose.addEventListener('click', function() {
+            closeModal(mapModal, mapModalIframe);
+        });
+        
+        const mapModalTitle = document.createElement('h2');
+        mapModalTitle.className = 'camera-modal-title';
+        mapModalTitle.style.padding = '1rem';
+        mapModalTitle.style.margin = '0';
+        mapModalTitle.style.backgroundColor = 'rgb(32, 24, 192)';
+        mapModalTitle.style.color = 'white';
+        mapModalTitle.style.fontSize = '1.2rem';
+        mapModalTitle.style.textAlign = 'center';
+        
+        const mapModalIframe = document.createElement('iframe');
+        mapModalIframe.className = 'camera-modal-iframe';
+        mapModalIframe.style.width = '100%';
+        mapModalIframe.style.height = '60vh';
+        mapModalIframe.style.border = 'none';
+        mapModalIframe.style.display = 'block';
+        mapModalIframe.style.backgroundColor = '#000';
+        mapModalIframe.style.minHeight = '50vh';
+        mapModalIframe.setAttribute('allowfullscreen', '');
+        mapModalIframe.setAttribute('loading', 'lazy');
+        
+        mapModalContent.appendChild(mapModalClose);
+        mapModalContent.appendChild(mapModalTitle);
+        mapModalContent.appendChild(mapModalIframe);
+        mapModal.appendChild(mapModalContent);
+        
+        // Add map modal to the document body
+        document.body.appendChild(mapModal);
+        
+        // Close modal when clicking outside of the content
+        cameraModal.addEventListener('click', function(event) {
+            if (event.target === cameraModal) {
+                closeModal(cameraModal, cameraModalVideo);
+            }
+        });
+        
+        // Close modal when clicking outside of the content
+        mapModal.addEventListener('click', function(event) {
+            if (event.target === mapModal) {
+                closeModal(mapModal, mapModalIframe);
+            }
+        });
         
         /**
-         * Load a batch of videos into the container
-         * @param {number} start - Starting index in the videos array
-         * @param {number} count - Number of videos to load
+         * Close the specified modal and clean up resources
+         * @param {HTMLElement} modal - The modal element to close
+         * @param {HTMLVideoElement|HTMLIFrameElement} mediaElement - The media element to clear
          */
-        function loadVideos(start, count) {
-            // Get the subset of videos to load in this batch
-            const videosToLoad = allVideos.slice(start, start + count);
+        function closeModal(modal, mediaElement) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
             
-            // Create and append video elements for each camera
+            // Clear the media source
+            if (mediaElement.tagName === 'IFRAME') {
+                mediaElement.src = '';
+            } else if (mediaElement.tagName === 'VIDEO') {
+                mediaElement.pause();
+                mediaElement.src = '';
+                mediaElement.load();
+            }
+            
+            // Remove any message that might have been added
+            const existingMessage = modal.querySelector('.camera-modal-message');
+            if (existingMessage) {
+                existingMessage.parentNode.removeChild(existingMessage);
+            }
+        }
+        
+        /**
+         * Open the camera modal with the specified video
+         * @param {Object} video - The video object containing name and URL
+         */
+        function openCameraModal(video) {
+            cameraModalTitle.textContent = video.name;
+            
+            // Set the video source directly from the JSON
+            cameraModalVideo.style.display = 'block';
+            cameraModalVideo.src = video.url;
+            cameraModalVideo.load(); // Important to reload the video with the new source
+            
+            // Try to play the video (may be blocked by browser autoplay policies)
+            const playPromise = cameraModalVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Autoplay prevented:', error);
+                    // Show play button or message if needed
+                });
+            }
+            
+            // Remove any message that might have been added
+            const existingMessage = cameraModalContent.querySelector('.camera-modal-message');
+            if (existingMessage) {
+                cameraModalContent.removeChild(existingMessage);
+            }
+            
+            cameraModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+        
+        /**
+         * Open the map modal with the specified location
+         * @param {Object} video - The video object containing name, latitude, and longitude
+         */
+        function openMapModal(video) {
+            mapModalTitle.textContent = `${video.name} - Map Location`;
+            
+            // Create Google Maps embed URL
+            const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${video.latitude},${video.longitude}&zoom=15`;
+            mapModalIframe.src = mapUrl;
+            
+            mapModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+        
+        // Store all videos for search
+        const allVideos = [...videos];
+        
+        // Search configuration
+        let isSearchActive = false; // Track if search is active
+        let filteredVideos = []; // Store filtered videos when search is active
+        
+        /**
+         * Filter videos based on search query
+         * @param {string} query - The search query
+         * @returns {Array} - Filtered array of videos
+         */
+        function filterVideos(query) {
+            if (!query.trim()) {
+                return allVideos;
+            }
+            
+            const normalizedQuery = query.toLowerCase().trim();
+            return allVideos.filter(video => 
+                video.name.toLowerCase().includes(normalizedQuery)
+            );
+        }
+        
+        /**
+         * Handle search input changes
+         */
+        function handleSearch() {
+            const query = searchInput.value;
+            
+            // Show/hide clear button based on input
+            clearSearchBtn.style.display = query ? 'flex' : 'none';
+            
+            // Filter videos
+            filteredVideos = filterVideos(query);
+            isSearchActive = !!query.trim();
+            
+            // Clear existing videos
+            videoContainer.innerHTML = '';
+            
+            if (filteredVideos.length === 0 && isSearchActive) {
+                // Show no results message
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.innerHTML = `
+                    <p><small>No cameras found matching "${query}"</small></p>
+                    <div class="no-results-actions">
+                        <button class="highlight" id="reset-search">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> Show All Cameras
+                        </button>
+                    </div>
+                `;
+                videoContainer.appendChild(noResults);
+                
+                // Add event listener to reset button
+                document.getElementById('reset-search').addEventListener('click', clearSearch);
+                
+                // Show video container
+                videoContainer.style.display = 'grid';
+                loadingMessage.style.display = 'none';
+            } else {
+                // Load filtered videos
+                loadVideos(isSearchActive ? filteredVideos : allVideos);
+            }
+        }
+        
+        /**
+         * Clear the search input and reset to show all videos
+         */
+        function clearSearch() {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            isSearchActive = false;
+            
+            // Clear existing videos
+            videoContainer.innerHTML = '';
+            
+            // Load all videos
+            loadVideos(allVideos);
+        }
+        
+        // Add event listeners for search
+        if (searchInput) {
+            searchInput.addEventListener('input', handleSearch);
+            clearSearchBtn.addEventListener('click', clearSearch);
+        }
+        
+        /**
+         * Load videos into the container
+         * @param {Array} videosToLoad - The videos to display
+         */
+        function loadVideos(videosToLoad) {
+            // Create and append video elements
             videosToLoad.forEach(video => {
-                // Create container for this video
+                // Create video item container
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item';
                 
-                // Create Google Maps link with the camera's coordinates
-                const mapsUrl = `https://www.google.com/maps?q=${video.latitude},${video.longitude}`;
-                
-                // Build the HTML for this camera item
-                videoItem.innerHTML = `
-                    <h2><a href="#" data-maps-url="${mapsUrl}" data-location-name="${video.name}" class="map-link" title="View on map"><i class="fa-solid fa-location-dot"></i> ${video.name}</a></h2>
-                    <video controls crossorigin playsinline autoplay muted>
-                        <source src="${video.url}" type="application/x-mpegURL">
-                    </video>
-                `;
-                videoContainer.appendChild(videoItem);
-                
-                // Initialize video player for this camera
-                const videoElement = videoItem.querySelector('video');
-                initializeVideoPlayer(videoElement);
-                
-                // Add click event for the map link
-                const mapLink = videoItem.querySelector('.map-link');
-                mapLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    openMapModal(this.getAttribute('data-maps-url'), this.getAttribute('data-location-name'));
+                // Create video title that's clickable
+                const videoTitle = document.createElement('h3');
+                videoTitle.textContent = video.name;
+                videoTitle.className = 'video-title';
+                videoTitle.addEventListener('click', function() {
+                    openCameraModal(video);
                 });
+                videoItem.appendChild(videoTitle);
+                
+                // Create link container
+                const linkContainer = document.createElement('div');
+                linkContainer.className = 'link-container';
+                
+                // Add map link if coordinates are available
+                if (video.latitude && video.longitude) {
+                    const mapLink = document.createElement('a');
+                    mapLink.href = 'javascript:void(0);'; // Use JavaScript void to prevent page navigation
+                    mapLink.className = 'map-link';
+                    mapLink.innerHTML = '<i class="fa-solid fa-map-location-dot"></i> Map';
+                    mapLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        openMapModal(video);
+                    });
+                    linkContainer.appendChild(mapLink);
+                }
+                
+                // Add the link container to the video item
+                videoItem.appendChild(linkContainer);
+                
+                // Add the video item to the main container
+                videoContainer.appendChild(videoItem);
             });
             
-            // Update the count of loaded videos
-            videosLoaded += videosToLoad.length;
-            
-            // Show/hide "Load More" button based on whether all videos are loaded
-            if (videosLoaded >= allVideos.length) {
-                loadMoreContainer.style.display = 'none'; // All videos loaded, hide button
-            } else {
-                loadMoreContainer.style.display = 'flex'; // More videos available, show button
-            }
+            // Hide loading message and show video container
+            loadingMessage.style.display = 'none';
+            videoContainer.style.display = 'flex';
         }
         
-        /**
-         * Initialize the Plyr video player with HLS.js for streaming support
-         * @param {HTMLVideoElement} video - The video element to initialize
-         */
-        function initializeVideoPlayer(video) {
-            if (Hls.isSupported()) {
-                // Use HLS.js for browsers that don't natively support HLS streams
-                const hls = new Hls();
-                hls.loadSource(video.querySelector('source').src);
-                hls.attachMedia(video);
-                
-                // Initialize Plyr once HLS manifest is parsed
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    new Plyr(video, {
-                        controls: ['play', 'mute', 'volume', 'fullscreen'],
-                        hideControls: true,
-                        resetOnEnd: true,
-                        keyboard: false
-                    });
-                });
-            } else {
-                // Fallback for browsers with native HLS support
-                new Plyr(video, {
-                    controls: ['play', 'mute', 'volume', 'fullscreen'],
-                    hideControls: true,
-                    resetOnEnd: true,
-                    keyboard: false
-                });
-            }
-        }
-        
-        // Load the initial batch of videos
-        loadVideos(0, videosPerLoad);
-        
-        // Hide loading message and show video container
-        loadingMessage.style.display = 'none';
-        videoContainer.style.display = 'flex';
-        
-        // Add event listener to "Load More" button
-        loadMoreBtn.addEventListener('click', () => {
-            loadVideos(videosLoaded, videosPerLoad);
-        });
+        // Load all videos initially
+        loadVideos(allVideos);
     })
     .catch(error => {
-        // Handle errors in fetching or processing video data
-        console.error('Error fetching video data:', error);
-        document.getElementById('loading-message').textContent = "Error loading videos.";
-    });
-
-// ===== WEATHER FUNCTIONALITY =====
-
-/**
- * Fetch current weather data from NOAA API for Kansas City
- * Implementation matches the iOS app's WeatherService
- */
-
-// Kansas City coordinates (matching iOS app)
-const lat = "39.2976";
-const lon = "-94.7139";
-
-// Step 1: Get the grid points for our location
-fetch(`https://api.weather.gov/points/${lat},${lon}`, {
-    headers: {
-        'User-Agent': '(howstheroads.com, contact@howstheroads.com)'
-    }
-})
-.then(response => response.json())
-.then(pointsData => {
-    console.log('Points API Response:', pointsData);
-    
-    // Extract the forecast endpoint from the response (matching iOS app)
-    const forecastHourlyUrl = pointsData.properties.forecastHourly;
-    
-    // Step 2: Get the hourly forecast (matching iOS app)
-    return fetch(forecastHourlyUrl, {
-        headers: {
-            'User-Agent': '(howstheroads.com, contact@howstheroads.com)'
+        console.error('Error fetching or processing video data:', error);
+        
+        // Show error message
+        const loadingMessage = document.getElementById('loading-message');
+        if (loadingMessage) {
+            loadingMessage.innerHTML = '<h3>Error loading cameras. Please try again later.</h3>';
         }
-    })
-    .then(response => response.json())
-    .then(forecastData => {
-        console.log('Forecast API Response:', forecastData);
-        
-        // Get the current period (matching iOS app)
-        const currentPeriod = forecastData.properties.periods[0];
-        const tempF = currentPeriod.temperature;
-        const isNight = !currentPeriod.isDaytime;
-        
-        // Get weather condition from the forecast (matching iOS app's determineWeatherEmoji function)
-        const emoji = determineWeatherEmoji(
-            currentPeriod.shortForecast,
-            isNight
-        );
-        
-        console.log('Weather data processed:', {
-            period: currentPeriod,
-            tempF: tempF,
-            shortForecast: currentPeriod.shortForecast,
-            emoji: emoji,
-            isNight: isNight
-        });
-        
-        // Update the temperature display with the same format as iOS
-        document.getElementById('temperature-text').textContent = `${emoji} ${tempF}°f in KC`;
-    });
-})
-.catch(error => {
-    console.error('Weather API Error:', error);
-    document.getElementById('temperature-text').textContent = "Unable to load temperature";
-});
-
-/**
- * Determine the appropriate weather emoji based on forecast conditions
- * This function exactly matches the iOS implementation's determineWeatherEmoji
- * 
- * @param {string} shortForecast - The short forecast text from the API
- * @param {boolean} isNight - Whether it's currently night time
- * @returns {string} - Weather emoji representing current conditions
- */
-function determineWeatherEmoji(shortForecast, isNight) {
-    const forecast = shortForecast.toLowerCase();
-    
-    if (forecast.includes('thunder')) {
-        return '⛈️';
-    } else if (forecast.includes('rain') || forecast.includes('shower')) {
-        return '🌧️';
-    } else if (forecast.includes('snow')) {
-        return '❄️';
-    } else if (forecast.includes('fog') || forecast.includes('mist')) {
-        return '🌫️';
-    } else if (forecast.includes('cloud') || forecast.includes('overcast')) {
-        // Check if it's nighttime first
-        if (isNight) {
-            if (forecast.includes('partly')) {
-                return '🌙'; // Moon with some clouds
-            } else if (forecast.includes('mostly')) {
-                return '☁️'; // Just clouds at night
-            } else {
-                return '☁️'; // Overcast at night
-            }
-        } else {
-            // Daytime cloud conditions
-            if (forecast.includes('partly')) {
-                return '⛅';
-            } else if (forecast.includes('mostly')) {
-                return '🌥️';
-            } else {
-                return '☁️';
-            }
-        }
-    } else {
-        // Clear or sunny
-        return isNight ? '🌙' : '☀️';
-    }
-}
-
-// ===== MAP MODAL FUNCTIONALITY =====
-
-/**
- * Open the map modal with the given URL and location name
- * @param {string} mapUrl - The Google Maps URL to load in the iframe
- * @param {string} locationName - The name of the location to display
- */
-function openMapModal(mapUrl, locationName) {
-    // Get modal elements
-    const modal = document.getElementById('map-modal');
-    const iframe = document.getElementById('map-iframe');
-    const title = document.getElementById('map-modal-title');
-    
-    // Extract coordinates from the URL
-    const urlParams = new URLSearchParams(mapUrl.split('?')[1]);
-    const coordinates = urlParams.get('q');
-    const [lat, lng] = coordinates.split(',');
-    
-    // Create a direct URL to Google Maps with a clean view
-    // Using center parameter to focus on the location without a pin
-    const embedUrl = `https://www.google.com/maps?ll=${lat},${lng}&z=15&output=embed`;
-    
-    // Set the iframe source and title
-    iframe.src = embedUrl;
-    title.textContent = locationName;
-    
-    // Show the modal
-    modal.style.display = 'flex';
-    
-    // Prevent scrolling on the body
-    document.body.style.overflow = 'hidden';
-}
-
-// Add event listener to close the modal
-document.addEventListener('DOMContentLoaded', function() {
-    const closeButton = document.getElementById('map-modal-close');
-    const modal = document.getElementById('map-modal');
-    
-    // Close when the close button is clicked
-    closeButton.addEventListener('click', function() {
-        closeMapModal();
-    });
-    
-    // Close when clicking outside the modal content
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeMapModal();
-        }
-    });
-    
-    // Close when pressing Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.style.display === 'flex') {
-            closeMapModal();
-        }
-    });
-});
-
-/**
- * Close the map modal
- */
-function closeMapModal() {
-    const modal = document.getElementById('map-modal');
-    const iframe = document.getElementById('map-iframe');
-    
-    // Hide the modal
-    modal.style.display = 'none';
-    
-    // Clear the iframe source to stop loading
-    iframe.src = '';
-    
-    // Restore scrolling on the body
-    document.body.style.overflow = '';
-}
-
-// ===== WEATHER MODAL FUNCTIONALITY =====
-
-/**
- * Open the weather modal with the NOAA forecast for Kansas City
- */
-function openWeatherModal() {
-    // Get modal elements
-    const modal = document.getElementById('weather-modal');
-    const iframe = document.getElementById('weather-iframe');
-    
-    // Set the iframe source to the NOAA forecast page for Kansas City
-    iframe.src = 'https://forecast.weather.gov/MapClick.php?CityName=Kansas+City&state=MO&site=EAX&textField1=39.0904&textField2=-94.5837&e=0';
-    
-    // Show the modal
-    modal.style.display = 'flex';
-    
-    // Prevent scrolling on the body
-    document.body.style.overflow = 'hidden';
-}
-
-// Add event listener to close the weather modal
-document.addEventListener('DOMContentLoaded', function() {
-    const closeButton = document.getElementById('weather-modal-close');
-    const modal = document.getElementById('weather-modal');
-    
-    if (closeButton && modal) {
-        // Close when the close button is clicked
-        closeButton.addEventListener('click', function() {
-            closeWeatherModal();
-        });
-        
-        // Close when clicking outside the modal content
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeWeatherModal();
-            }
-        });
-        
-        // Close when pressing Escape key (already handled by the map modal event listener)
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.style.display === 'flex') {
-                closeWeatherModal();
-            }
-        });
-    }
-});
-
-/**
- * Close the weather modal
- */
-function closeWeatherModal() {
-    const modal = document.getElementById('weather-modal');
-    const iframe = document.getElementById('weather-iframe');
-    
-    // Hide the modal
-    modal.style.display = 'none';
-    
-    // Clear the iframe source to stop loading
-    iframe.src = '';
-    
-    // Restore scrolling on the body
-    document.body.style.overflow = '';
-} 
+    }); 

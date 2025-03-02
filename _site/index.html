@@ -7,9 +7,13 @@
     <meta name="description" content="Live traffic cameras and current weather conditions for Kansas City roads">
     <meta name="keywords" content="KCMO traffic cameras, Kansas City road conditions, live traffic cams KC, Kansas City weather traffic, real-time road conditions KC, KCMO commute updates, Missouri highway cameras, KC traffic live feed, winter road conditions Kansas City, I-70 traffic cam KC, KC metro traffic, Missouri DOT cameras, Kansas City interstate cameras, downtown KC traffic, Plaza traffic cameras">
     <meta name="author" content="How's The Roads?">
+    
+    
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    
+    
     <meta name="revisit-after" content="7 days">
     <meta name="language" content="English">
     <meta name="geo.region" content="US-MO">
@@ -55,6 +59,9 @@
     
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     <script src="https://kit.fontawesome.com/53df3a2a07.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Structured Data / JSON-LD -->
     <script type="application/ld+json">
@@ -105,67 +112,20 @@
 </head> 
   <body>
     <main class="main-container">
-      <header>
-    <h1><i class="fa-solid fa-road"></i> How's The Roads?</h1>
-    <nav>
-        <a href="javascript:void(0);" 
-           onclick="openWeatherModal()"
-           title="View detailed KC weather forecast">
-            <h2 id="temperature-text">fetching...</h2>
-        </a>
-        <a href="https://apps.apple.com/us/app/hows-the-roads/id6742173400" target="_blank" class="highlight highlight-app">Get the app <small>New!</small><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-    </nav>
-</header> 
-      <div id="loading-message" class="loading-message">
-    <h3>loading kansas city...</h3>
-</div>
-<div class="video-container" id="video-container" style="display: none;">
-    <!-- Video items will be dynamically inserted here -->
-</div>
-<div class="load-more-container" id="load-more-container" style="display: none;">
-    <button class="highlight highlight-fullwidth" id="load-more-btn">
-        <i class="fa-solid fa-circle-plus"></i>Load More
-    </button>
+      <div class="app-download-container">
+    <img src="appicon.png" alt="App Icon" class="app-icon">
+    <h1>How's the roads?</h1>
+    <h2>View live traffic cameras and current weather conditions for Kansas City roads</h2>
+    <a href="https://apps.apple.com/us/app/hows-the-roads/id6742173400" target="_blank" class="highlight highlight-app">
+        <i class="fa-brands fa-apple"></i>Download on the App Store
+    </a>
+    <hr>
+    <p><a href="https://forms.gle/ZnyUcmjtj7SFWeyo8" target="_blank"><i class="fa-solid fa-comment"></i> feedback</a> &bull; ✌️ safe travels kc</p>
 </div>
 
-<!-- Map Modal -->
-<div id="map-modal" class="map-modal">
-    <h2 id="map-modal-title" class="map-modal-title"></h2>
-    <div class="map-modal-content">
-        <iframe id="map-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
-    </div>
-    <button id="map-modal-close" class="map-modal-close">
-        <i class="fa-solid fa-xmark"></i>
-    </button>
-</div>
-
-<!-- Weather Modal -->
-<div id="weather-modal" class="map-modal">
-    <h2 id="weather-modal-title" class="map-modal-title">Kansas City Weather</h2>
-    <div class="map-modal-content">
-        <iframe id="weather-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
-    </div>
-    <button id="weather-modal-close" class="map-modal-close">
-        <i class="fa-solid fa-xmark"></i>
-    </button>
-</div>
-      <footer>
-    <nav>
-        <h3><a href="/"><i class="fa-solid fa-arrows-rotate"></i> Refresh</a></h3>
-        <h3><a href="https://forms.gle/ZnyUcmjtj7SFWeyo8" target="_blank"><i class="fa-solid fa-video"></i> Request</a></h3>
-    </nav>
-    <nav>
-        <div class="logo">
-            <h3>safe travels</h3>
-            <img src="/kc.svg" alt="kcmo" />
-        </div>
-        <a href="https://apps.apple.com/us/app/hows-the-roads/id6742173400" target="_blank" class="highlight highlight-app">Get the app <small>New!</small><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-    </nav>
-</footer> 
+<!-- Remove all modals and other content -->
     </main>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="/assets/js/main.js"></script>
+    <script src="/assets/js/main.js"></script>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LX0GQ46N1N"></script>

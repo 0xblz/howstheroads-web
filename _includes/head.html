@@ -5,9 +5,17 @@
     <meta name="description" content="{{ site.description }}">
     <meta name="keywords" content="KCMO traffic cameras, Kansas City road conditions, live traffic cams KC, Kansas City weather traffic, real-time road conditions KC, KCMO commute updates, Missouri highway cameras, KC traffic live feed, winter road conditions Kansas City, I-70 traffic cam KC, KC metro traffic, Missouri DOT cameras, Kansas City interstate cameras, downtown KC traffic, Plaza traffic cameras">
     <meta name="author" content="{{ site.author }}">
+    
+    {% if page.noindex %}
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="bingbot" content="noindex, nofollow">
+    {% else %}
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    {% endif %}
+    
     <meta name="revisit-after" content="7 days">
     <meta name="language" content="English">
     <meta name="geo.region" content="US-MO">
@@ -53,6 +61,9 @@
     
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     <script src="https://kit.fontawesome.com/53df3a2a07.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Structured Data / JSON-LD -->
     <script type="application/ld+json">
