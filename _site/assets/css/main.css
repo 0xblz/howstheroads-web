@@ -63,9 +63,9 @@ h2 {
 
 h3 {
   font-size: 1.1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: 0 0.25rem 0.75rem var(--color-primary);
+  line-height: 1.4em;
+  font-weight: 400;
+  text-shadow: 0 0.25rem 1rem var(--color-primary);
 }
 
 small {
@@ -141,10 +141,10 @@ main {
   right: 0;
   transform: translateY(-50%) translateX(-1.5rem);
   padding: 0.5rem 0.75rem;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(1rem);
   -webkit-backdrop-filter: blur(1rem);
-  color: var(--color-secondary);
+  color: var(--color-primary);
   border-radius: 9999px;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
 }
