@@ -112,7 +112,11 @@
 </head> 
   <body>
     <main class="main-container">
-      <div class="app-download-container">
+      <div id="weather-pill" class="weather-pill">
+    <span id="weather-text">🌥️ --°F in KC</span>
+</div>
+
+<div class="app-download-container">
     <img src="appicon.png" alt="App Icon" class="app-icon">
     <h1>How's the roads?</h1>
     <h2>View live traffic cameras and current weather conditions for Kansas City roads</h2>
@@ -122,10 +126,9 @@
     <hr>
     <p><a href="https://forms.gle/ZnyUcmjtj7SFWeyo8" target="_blank"><i class="fa-solid fa-comment"></i> feedback</a> &bull; ✌️ safe travels kc</p>
 </div>
-
-<!-- Remove all modals and other content -->
     </main>
     <script src="/assets/js/main.js"></script>
+<script src="/assets/js/weather.js"></script>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LX0GQ46N1N"></script>

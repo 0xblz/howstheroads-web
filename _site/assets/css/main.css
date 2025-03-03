@@ -104,7 +104,7 @@ main {
   gap: 0.5rem;
   background-color: var(--color-tertiary);
   padding: 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: 1.5rem;
   color: white;
   text-shadow: none;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
@@ -387,6 +387,34 @@ main {
   height: 7.5rem;
   border-radius: 2rem;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Weather Pill Styles */
+.weather-pill {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  transition: all 0.2s ease-in-out;
+  max-width: calc(100% - 2rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weather-pill:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /*# sourceMappingURL=main.css.map */
