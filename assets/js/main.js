@@ -411,4 +411,48 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
         if (loadingMessage) {
             loadingMessage.innerHTML = '<h3>Error loading cameras. Please try again later.</h3>';
         }
-    }); 
+    });
+
+/**
+ * Thumbnail Gallery and Lightbox Functionality
+ * Handles opening images in a lightbox when thumbnails are clicked
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all thumbnail elements
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxClose = document.querySelector('.lightbox-close');
+    
+    // Add click event to each thumbnail
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            const imgSrc = this.getAttribute('data-img');
+            lightboxImg.src = imgSrc;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when lightbox is open
+        });
+    });
+    
+    // Close lightbox when clicking the close button
+    lightboxClose.addEventListener('click', function() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+    });
+    
+    // Close lightbox when clicking outside the image
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    });
+    
+    // Close lightbox with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    });
+}); 

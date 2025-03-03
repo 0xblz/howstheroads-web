@@ -46,7 +46,7 @@ a:hover {
 }
 
 h1 {
-  font-size: 2.2rem;
+  font-size: 2rem;
   line-height: 1.1em;
   font-weight: 800;
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
@@ -63,7 +63,7 @@ h2 {
 h3 {
   font-size: 1.1rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 small {
@@ -383,9 +383,9 @@ main {
 }
 /* App Icon Styles */
 .app-icon {
-  width: 7.5rem;
-  height: 7.5rem;
-  border-radius: 2rem;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 1.5rem;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -415,6 +415,84 @@ main {
   background-color: rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Thumbnail Gallery Styles */
+.thumbnail-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.thumbnail {
+  width: 100%;
+  flex: 1;
+  min-width: 120px;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 0.5rem 0.5rem var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.thumbnail:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.75rem 1rem var(--color-primary);
+}
+
+.thumbnail img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Lightbox Styles */
+.lightbox {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.lightbox.active {
+  display: flex;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -2rem;
+  right: 0;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lightbox-close:hover {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /*# sourceMappingURL=main.css.map */
