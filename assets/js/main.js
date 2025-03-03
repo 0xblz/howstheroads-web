@@ -82,7 +82,7 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
         cameraModalTitle.className = 'camera-modal-title';
         cameraModalTitle.style.padding = '1rem';
         cameraModalTitle.style.margin = '0';
-        cameraModalTitle.style.backgroundColor = 'rgb(32, 24, 192)';
+        cameraModalTitle.style.backgroundColor = 'rgb(0, 0, 0)';
         cameraModalTitle.style.color = 'white';
         cameraModalTitle.style.fontSize = '1.2rem';
         cameraModalTitle.style.textAlign = 'center';
@@ -156,7 +156,7 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
         mapModalTitle.className = 'camera-modal-title';
         mapModalTitle.style.padding = '1rem';
         mapModalTitle.style.margin = '0';
-        mapModalTitle.style.backgroundColor = 'rgb(32, 24, 192)';
+        mapModalTitle.style.backgroundColor = 'rgb(0, 0, 0)';
         mapModalTitle.style.color = 'white';
         mapModalTitle.style.fontSize = '1.2rem';
         mapModalTitle.style.textAlign = 'center';

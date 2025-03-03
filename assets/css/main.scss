@@ -33,7 +33,7 @@ body {
   position: relative;
   overflow-x: hidden;
   color: white;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(-180deg, var(--color-primary) 0%, var(--color-secondary) 100%);
 }
 
 /* Typography */
@@ -388,8 +388,8 @@ main {
 
 /* App Icon Styles */
 .app-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 1.5rem;
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 2rem;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
