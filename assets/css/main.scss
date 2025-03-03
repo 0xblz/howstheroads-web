@@ -133,21 +133,17 @@ main {
   position: relative;
 }
 
-.highlight-app:hover small {
-  transform: translate(-0.75rem, -70%) scale(1.1);
-}
-
 .highlight-app small {
   transition: all 0.15s ease-in-out;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 800;
   position: absolute;
   top: 0;
   right: 0;
-  transform: translate(-0.75rem, -60%);
+  transform: translateY(-0.75rem) translateX(-0.75rem);
   padding: 0.25rem 0.5rem;
-  background-color: white;
-  color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: white;
   border-radius: 9999px;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
 }
@@ -440,7 +436,7 @@ main {
   box-shadow: 0 0.5rem 0.5rem var(--color-primary);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--color-secondary);
 }
 
 .thumbnail:hover {
