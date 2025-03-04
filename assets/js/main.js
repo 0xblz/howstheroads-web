@@ -455,4 +455,47 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = ''; // Restore scrolling
         }
     });
+});
+
+/**
+ * Feedback Lightbox Functionality
+ * Handles opening the feedback form in a lightbox
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const feedbackLink = document.getElementById('feedback-link');
+    const feedbackLightbox = document.getElementById('feedback-lightbox');
+    const feedbackLightboxClose = feedbackLightbox?.querySelector('.lightbox-close');
+    
+    // Add click event to feedback link
+    if (feedbackLink && feedbackLightbox) {
+        feedbackLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            feedbackLightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when lightbox is open
+        });
+        
+        // Close lightbox when clicking the close button
+        if (feedbackLightboxClose) {
+            feedbackLightboxClose.addEventListener('click', function() {
+                feedbackLightbox.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            });
+        }
+        
+        // Close lightbox when clicking outside the content
+        feedbackLightbox.addEventListener('click', function(e) {
+            if (e.target === feedbackLightbox) {
+                feedbackLightbox.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        });
+        
+        // Close lightbox with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && feedbackLightbox.classList.contains('active')) {
+                feedbackLightbox.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        });
+    }
 }); 

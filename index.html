@@ -36,7 +36,7 @@ layout: default
     <hr>
     
     <p>
-        <a href="https://forms.gle/ZnyUcmjtj7SFWeyo8" target="_blank"><i class="fa-solid fa-comment"></i> feedback</a> 
+        <a href="#" id="feedback-link"><i class="fa-solid fa-comment"></i> feedback</a> 
         &bull; 
         <a href="/privacy"><i class="fa-solid fa-shield-halved"></i>  privacy</a> 
     </p>
@@ -46,6 +46,16 @@ layout: default
 <div id="lightbox" class="lightbox">
     <div class="lightbox-content">
         <img id="lightbox-img" src="" alt="Lightbox Image">
+        <span class="lightbox-close">&times;</span>
+    </div>
+</div>
+
+<!-- Feedback Lightbox -->
+<div id="feedback-lightbox" class="lightbox">
+    <div class="lightbox-content feedback-content">
+        <h2>Send Feedback</h2>
+        <p>We'd love to hear your thoughts on How's the Roads!</p>
+        <iframe src="https://forms.gle/ZnyUcmjtj7SFWeyo8" frameborder="0" width="100%" height="500px"></iframe>
         <span class="lightbox-close">&times;</span>
     </div>
 </div>
