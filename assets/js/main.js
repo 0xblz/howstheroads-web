@@ -287,6 +287,176 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
         let isSearchActive = false; // Track if search is active
         let filteredVideos = []; // Store filtered videos when search is active
         
+        // Location sorting configuration
+        let userLocation = null; // Store user's location coordinates
+        let isLocationSortActive = false; // Track if location sort is active
+        
+        /**
+         * Calculate the distance between two points using the Haversine formula
+         * @param {number} lat1 - Latitude of point 1 (in degrees)
+         * @param {number} lon1 - Longitude of point 1 (in degrees)
+         * @param {number} lat2 - Latitude of point 2 (in degrees)
+         * @param {number} lon2 - Longitude of point 2 (in degrees)
+         * @returns {number} - Distance in kilometers
+         */
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // Convert degrees to radians
+            const toRad = value => value * Math.PI / 180;
+            const R = 6371; // Earth's radius in km
+            
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // Distance in km
+        }
+        
+        /**
+         * Sort videos by distance from user's location
+         * @param {Array} videosToSort - Array of videos to sort
+         * @param {Object} location - User's location {latitude, longitude}
+         * @returns {Array} - Sorted array of videos
+         */
+        function sortVideosByLocation(videosToSort, location) {
+            // Filter out videos without coordinates
+            const videosWithCoords = videosToSort.filter(video => 
+                video.latitude && video.longitude && 
+                !isNaN(parseFloat(video.latitude)) && 
+                !isNaN(parseFloat(video.longitude))
+            );
+            
+            // Calculate distance for each video
+            const videosWithDistance = videosWithCoords.map(video => {
+                const distance = calculateDistance(
+                    location.latitude, 
+                    location.longitude, 
+                    parseFloat(video.latitude), 
+                    parseFloat(video.longitude)
+                );
+                return { ...video, distance };
+            });
+            
+            // Sort by distance
+            const sortedVideos = videosWithDistance.sort((a, b) => a.distance - b.distance);
+            
+            // Get videos without coordinates
+            const videosWithoutCoords = videosToSort.filter(video => 
+                !video.latitude || !video.longitude || 
+                isNaN(parseFloat(video.latitude)) || 
+                isNaN(parseFloat(video.longitude))
+            );
+            
+            // Append videos without coordinates at the end
+            return [...sortedVideos, ...videosWithoutCoords];
+        }
+        
+        /**
+         * Get user's current location
+         * @returns {Promise} - Promise that resolves with the user's location
+         */
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported by your browser'));
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        resolve({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        });
+                    },
+                    error => {
+                        reject(error);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
+        }
+        
+        /**
+         * Handle location sort button click
+         */
+        function handleLocationSort() {
+            const locationSortBtn = document.getElementById('location-sort-btn');
+            
+            if (!locationSortBtn) {
+                return;
+            }
+            
+            locationSortBtn.addEventListener('click', async function() {
+                // Show loading state
+                locationSortBtn.classList.add('loading');
+                locationSortBtn.disabled = true;
+                locationSortBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                
+                try {
+                    // Get user's location
+                    userLocation = await getUserLocation();
+                    
+                    // Sort videos by location
+                    const videosToSort = isSearchActive ? filteredVideos : allVideos;
+                    const sortedVideos = sortVideosByLocation(videosToSort, userLocation);
+                    
+                    // Update active state
+                    isLocationSortActive = true;
+                    locationSortBtn.classList.add('active');
+                    
+                    // Clear existing videos
+                    videoContainer.innerHTML = '';
+                    
+                    // Load sorted videos
+                    loadVideos(sortedVideos);
+                    
+                    // Update button state
+                    locationSortBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
+                    locationSortBtn.disabled = false;
+                    locationSortBtn.classList.remove('loading');
+                    locationSortBtn.title = "Sorted by distance from your location";
+                } catch (error) {
+                    console.error('Error getting location:', error);
+                    
+                    // Show error message
+                    locationSortBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
+                    locationSortBtn.disabled = false;
+                    locationSortBtn.classList.remove('loading');
+                    locationSortBtn.title = "Location access denied";
+                    
+                    // Create a notification
+                    const notification = document.createElement('div');
+                    notification.className = 'location-error-notification';
+                    notification.innerHTML = `
+                        <p>Unable to access your location. Please check your browser settings and try again.</p>
+                        <button class="close-notification">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    // Add close button functionality
+                    notification.querySelector('.close-notification').addEventListener('click', function() {
+                        notification.remove();
+                    });
+                    
+                    // Auto-remove after 5 seconds
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            notification.remove();
+                        }
+                    }, 5000);
+                }
+            });
+        }
+        
+        // Initialize location sort button
+        handleLocationSort();
+        
         /**
          * Filter videos based on search query
          * @param {string} query - The search query
@@ -340,8 +510,15 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
                 videoContainer.style.display = 'grid';
                 loadingMessage.style.display = 'none';
             } else {
+                // Apply location sorting if active
+                let videosToLoad = isSearchActive ? filteredVideos : allVideos;
+                
+                if (isLocationSortActive && userLocation) {
+                    videosToLoad = sortVideosByLocation(videosToLoad, userLocation);
+                }
+                
                 // Load filtered videos
-                loadVideos(isSearchActive ? filteredVideos : allVideos);
+                loadVideos(videosToLoad);
             }
         }
         
@@ -356,8 +533,14 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
             // Clear existing videos
             videoContainer.innerHTML = '';
             
-            // Load all videos
-            loadVideos(allVideos);
+            // Load all videos (with location sorting if active)
+            let videosToLoad = allVideos;
+            
+            if (isLocationSortActive && userLocation) {
+                videosToLoad = sortVideosByLocation(videosToLoad, userLocation);
+            }
+            
+            loadVideos(videosToLoad);
         }
         
         // Add event listeners for search
@@ -1101,7 +1284,7 @@ fetch('https://0xblz.github.io/docs/kansascity_all.json')
                 loadingMessage.style.display = 'none';
             } else {
                 // Load filtered videos
-                loadVideos(isSearchActive ? filteredVideos : allVideos);
+                loadVideos(filteredVideos);
             }
         }
         
