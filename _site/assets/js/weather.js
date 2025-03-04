@@ -4,11 +4,23 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize weather service
-    fetchWeather();
+    // Check if we're on a page that should not display weather (like cameras page)
+    const isNotHomepage = document.documentElement.classList.contains('not-homepage');
     
-    // Refresh weather data every 15 minutes
-    setInterval(fetchWeather, 15 * 60 * 1000);
+    // Only initialize weather on the homepage
+    if (!isNotHomepage) {
+        // Initialize weather service
+        fetchWeather();
+        
+        // Refresh weather data every 15 minutes
+        setInterval(fetchWeather, 15 * 60 * 1000);
+    } else {
+        // Hide weather pill on non-homepage pages
+        const weatherPill = document.getElementById('weather-pill');
+        if (weatherPill) {
+            weatherPill.style.display = 'none';
+        }
+    }
 });
 
 /**

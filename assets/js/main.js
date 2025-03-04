@@ -4,12 +4,13 @@
  * 1. Fetching and displaying traffic camera feeds
  * 2. Camera and map lightbox functionality
  * 3. Search functionality for cameras
+ * 4. Map view for cameras
  */
 
 // ===== TRAFFIC CAMERA FUNCTIONALITY =====
 
 /**
- * Fetch traffic camera data from JSON endpoint and populate the video container
+ * Fetch traffic camera data from JSON endpoint and populate the map
  * The JSON contains an array of camera objects with name, URL, latitude, and longitude
  */
 fetch('https://0xblz.github.io/docs/kansascity.json')
@@ -29,12 +30,13 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
 
         // Get DOM references
         const videoContainer = document.getElementById('video-container');
+        const mapContainer = document.getElementById('map-container');
+        const mapControls = document.getElementById('map-controls');
         const loadingMessage = document.getElementById('loading-message');
-        const searchInput = document.getElementById('camera-search');
-        const clearSearchBtn = document.getElementById('clear-search');
+        const locateMeBtn = document.getElementById('locate-me-btn');
         
-        // If we're not on the test page, don't proceed
-        if (!videoContainer || !loadingMessage) {
+        // If we're not on the cameras page, don't proceed
+        if (!mapContainer || !loadingMessage) {
             return;
         }
         
@@ -112,92 +114,6 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
         // Add camera modal to the document body
         document.body.appendChild(cameraModal);
         
-        // Create map modal elements
-        const mapModal = document.createElement('div');
-        mapModal.className = 'camera-modal map-modal'; // Reuse camera-modal styles
-        mapModal.style.display = 'none';
-        mapModal.style.position = 'fixed';
-        mapModal.style.top = '0';
-        mapModal.style.left = '0';
-        mapModal.style.width = '100%';
-        mapModal.style.height = '100%';
-        mapModal.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
-        mapModal.style.zIndex = '1000';
-        mapModal.style.display = 'none';
-        mapModal.style.justifyContent = 'center';
-        mapModal.style.alignItems = 'center';
-        mapModal.style.padding = '1rem';
-        
-        const mapModalContent = document.createElement('div');
-        mapModalContent.className = 'camera-modal-content';
-        mapModalContent.style.backgroundColor = 'black';
-        mapModalContent.style.borderRadius = '0.75rem';
-        mapModalContent.style.width = '100%';
-        mapModalContent.style.maxWidth = '900px';
-        mapModalContent.style.maxHeight = '90vh';
-        mapModalContent.style.overflow = 'hidden';
-        mapModalContent.style.position = 'relative';
-        mapModalContent.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.5)';
-        mapModalContent.style.display = 'flex';
-        mapModalContent.style.flexDirection = 'column';
-        
-        const mapModalClose = document.createElement('span');
-        mapModalClose.className = 'camera-modal-close';
-        mapModalClose.innerHTML = '&times;';
-        mapModalClose.style.position = 'absolute';
-        mapModalClose.style.top = '0.5rem';
-        mapModalClose.style.right = '0.75rem';
-        mapModalClose.style.fontSize = '2rem';
-        mapModalClose.style.color = 'white';
-        mapModalClose.style.cursor = 'pointer';
-        mapModalClose.style.zIndex = '10';
-        mapModalClose.style.transition = 'all 0.15s ease-in-out';
-        mapModalClose.addEventListener('click', function() {
-            closeModal(mapModal, mapModalIframe);
-        });
-        
-        const mapModalTitle = document.createElement('h2');
-        mapModalTitle.className = 'camera-modal-title';
-        mapModalTitle.style.padding = '1rem';
-        mapModalTitle.style.margin = '0';
-        mapModalTitle.style.backgroundColor = 'rgb(0, 0, 0)';
-        mapModalTitle.style.color = 'white';
-        mapModalTitle.style.fontSize = '1.2rem';
-        mapModalTitle.style.textAlign = 'center';
-        
-        const mapModalIframe = document.createElement('iframe');
-        mapModalIframe.className = 'camera-modal-iframe';
-        mapModalIframe.style.width = '100%';
-        mapModalIframe.style.height = '60vh';
-        mapModalIframe.style.border = 'none';
-        mapModalIframe.style.display = 'block';
-        mapModalIframe.style.backgroundColor = '#000';
-        mapModalIframe.style.minHeight = '50vh';
-        mapModalIframe.setAttribute('allowfullscreen', '');
-        mapModalIframe.setAttribute('loading', 'lazy');
-        
-        mapModalContent.appendChild(mapModalClose);
-        mapModalContent.appendChild(mapModalTitle);
-        mapModalContent.appendChild(mapModalIframe);
-        mapModal.appendChild(mapModalContent);
-        
-        // Add map modal to the document body
-        document.body.appendChild(mapModal);
-        
-        // Close modal when clicking outside of the content
-        cameraModal.addEventListener('click', function(event) {
-            if (event.target === cameraModal) {
-                closeModal(cameraModal, cameraModalVideo);
-            }
-        });
-        
-        // Close modal when clicking outside of the content
-        mapModal.addEventListener('click', function(event) {
-            if (event.target === mapModal) {
-                closeModal(mapModal, mapModalIframe);
-            }
-        });
-        
         /**
          * Close the specified modal and clean up resources
          * @param {HTMLElement} modal - The modal element to close
@@ -261,345 +177,207 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
             document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
         }
         
-        /**
-         * Open the map modal with the specified location
-         * @param {Object} video - The video object containing name, latitude, and longitude
-         */
-        function openMapModal(video) {
-            mapModalTitle.textContent = `${video.name} - Map Location`;
+        // Initialize the map
+        function initMap(videos) {
+            // Show map container and controls
+            mapContainer.style.display = 'block';
+            mapControls.style.display = 'flex';
             
-            // Create Google Maps embed URL
-            const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${video.latitude},${video.longitude}&zoom=15`;
-            mapModalIframe.src = mapUrl;
+            // Create map centered on Kansas City
+            const map = L.map('map-container').setView([39.0997, -94.5786], 11);
             
-            // Update URL with map location for sharing
-            const cameraId = encodeURIComponent(video.name);
-            window.history.pushState({type: 'map', id: cameraId}, '', `?map=${cameraId}`);
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
             
-            mapModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
-        }
-        
-        // Store all videos for search
-        const allVideos = [...videos];
-        
-        // Search configuration
-        let isSearchActive = false; // Track if search is active
-        let filteredVideos = []; // Store filtered videos when search is active
-        
-        // Location sorting configuration
-        let userLocation = null; // Store user's location coordinates
-        let isLocationSortActive = false; // Track if location sort is active
-        
-        /**
-         * Calculate the distance between two points using the Haversine formula
-         * @param {number} lat1 - Latitude of point 1 (in degrees)
-         * @param {number} lon1 - Longitude of point 1 (in degrees)
-         * @param {number} lat2 - Latitude of point 2 (in degrees)
-         * @param {number} lon2 - Longitude of point 2 (in degrees)
-         * @returns {number} - Distance in kilometers
-         */
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            // Convert degrees to radians
-            const toRad = value => value * Math.PI / 180;
-            const R = 6371; // Earth's radius in km
-            
-            const dLat = toRad(lat2 - lat1);
-            const dLon = toRad(lon2 - lon1);
-            
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; // Distance in km
-        }
-        
-        /**
-         * Sort videos by distance from user's location
-         * @param {Array} videosToSort - Array of videos to sort
-         * @param {Object} location - User's location {latitude, longitude}
-         * @returns {Array} - Sorted array of videos
-         */
-        function sortVideosByLocation(videosToSort, location) {
-            // Filter out videos without coordinates
-            const videosWithCoords = videosToSort.filter(video => 
+            // Filter videos with valid coordinates
+            const videosWithCoords = videos.filter(video => 
                 video.latitude && video.longitude && 
                 !isNaN(parseFloat(video.latitude)) && 
                 !isNaN(parseFloat(video.longitude))
             );
             
-            // Calculate distance for each video
-            const videosWithDistance = videosWithCoords.map(video => {
-                const distance = calculateDistance(
-                    location.latitude, 
-                    location.longitude, 
-                    parseFloat(video.latitude), 
-                    parseFloat(video.longitude)
-                );
-                return { ...video, distance };
-            });
-            
-            // Sort by distance
-            const sortedVideos = videosWithDistance.sort((a, b) => a.distance - b.distance);
-            
-            // Get videos without coordinates
-            const videosWithoutCoords = videosToSort.filter(video => 
-                !video.latitude || !video.longitude || 
-                isNaN(parseFloat(video.latitude)) || 
-                isNaN(parseFloat(video.longitude))
-            );
-            
-            // Append videos without coordinates at the end
-            return [...sortedVideos, ...videosWithoutCoords];
-        }
-        
-        /**
-         * Get user's current location
-         * @returns {Promise} - Promise that resolves with the user's location
-         */
-        function getUserLocation() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('Geolocation is not supported by your browser'));
-                    return;
-                }
+            // Add markers for each camera
+            videosWithCoords.forEach(video => {
+                const lat = parseFloat(video.latitude);
+                const lng = parseFloat(video.longitude);
                 
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        resolve({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        });
-                    },
-                    error => {
-                        reject(error);
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            });
-        }
-        
-        /**
-         * Handle location sort button click
-         */
-        function handleLocationSort() {
-            const locationSortBtn = document.getElementById('location-sort-btn');
-            
-            if (!locationSortBtn) {
-                return;
-            }
-            
-            locationSortBtn.addEventListener('click', async function() {
-                // Show loading state
-                locationSortBtn.classList.add('loading');
-                locationSortBtn.disabled = true;
-                locationSortBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                // Create custom marker icon
+                const cameraIcon = L.divIcon({
+                    className: 'camera-marker',
+                    html: '<i class="fa-solid fa-video"></i>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
                 
-                try {
-                    // Get user's location
-                    userLocation = await getUserLocation();
-                    
-                    // Sort videos by location
-                    const videosToSort = isSearchActive ? filteredVideos : allVideos;
-                    const sortedVideos = sortVideosByLocation(videosToSort, userLocation);
-                    
-                    // Update active state
-                    isLocationSortActive = true;
-                    locationSortBtn.classList.add('active');
-                    
-                    // Clear existing videos
-                    videoContainer.innerHTML = '';
-                    
-                    // Load sorted videos
-                    loadVideos(sortedVideos);
-                    
-                    // Update button state
-                    locationSortBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                    locationSortBtn.disabled = false;
-                    locationSortBtn.classList.remove('loading');
-                    locationSortBtn.title = "Sorted by distance from your location";
-                } catch (error) {
-                    console.error('Error getting location:', error);
-                    
-                    // Show error message
-                    locationSortBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                    locationSortBtn.disabled = false;
-                    locationSortBtn.classList.remove('loading');
-                    locationSortBtn.title = "Location access denied";
-                    
-                    // Create a notification
-                    const notification = document.createElement('div');
-                    notification.className = 'location-error-notification';
-                    notification.innerHTML = `
-                        <p>Unable to access your location. Please check your browser settings and try again.</p>
-                        <button class="close-notification">
-                            <i class="fa-solid fa-times"></i>
-                        </button>
-                    `;
-                    document.body.appendChild(notification);
-                    
-                    // Add close button functionality
-                    notification.querySelector('.close-notification').addEventListener('click', function() {
-                        notification.remove();
-                    });
-                    
-                    // Auto-remove after 5 seconds
-                    setTimeout(() => {
-                        if (document.body.contains(notification)) {
-                            notification.remove();
-                        }
-                    }, 5000);
-                }
-            });
-        }
-        
-        // Initialize location sort button
-        handleLocationSort();
-        
-        /**
-         * Filter videos based on search query
-         * @param {string} query - The search query
-         * @returns {Array} - Filtered array of videos
-         */
-        function filterVideos(query) {
-            if (!query.trim()) {
-                return allVideos;
-            }
-            
-            const normalizedQuery = query.toLowerCase().trim();
-            return allVideos.filter(video => 
-                video.name.toLowerCase().includes(normalizedQuery)
-            );
-        }
-        
-        /**
-         * Handle search input changes
-         */
-        function handleSearch() {
-            const query = searchInput.value;
-            
-            // Show/hide clear button based on input
-            clearSearchBtn.style.display = query ? 'flex' : 'none';
-            
-            // Filter videos
-            filteredVideos = filterVideos(query);
-            isSearchActive = !!query.trim();
-            
-            // Clear existing videos
-            videoContainer.innerHTML = '';
-            
-            if (filteredVideos.length === 0 && isSearchActive) {
-                // Show no results message
-                const noResults = document.createElement('div');
-                noResults.className = 'no-results';
-                noResults.innerHTML = `
-                    <p><small>No cameras found matching "${query}"</small></p>
-                    <div class="no-results-actions">
-                        <button class="highlight" id="reset-search">
-                            <i class="fa-solid fa-arrow-rotate-left"></i> Show All Cameras
-                        </button>
-                    </div>
-                `;
-                videoContainer.appendChild(noResults);
+                // Create marker
+                const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(map);
                 
-                // Add event listener to reset button
-                document.getElementById('reset-search').addEventListener('click', clearSearch);
+                // Create popup content
+                const popupContent = document.createElement('div');
+                popupContent.className = 'map-popup';
                 
-                // Show video container
-                videoContainer.style.display = 'grid';
-                loadingMessage.style.display = 'none';
-            } else {
-                // Apply location sorting if active
-                let videosToLoad = isSearchActive ? filteredVideos : allVideos;
+                const title = document.createElement('h3');
+                title.textContent = video.name;
+                popupContent.appendChild(title);
                 
-                if (isLocationSortActive && userLocation) {
-                    videosToLoad = sortVideosByLocation(videosToLoad, userLocation);
-                }
-                
-                // Load filtered videos
-                loadVideos(videosToLoad);
-            }
-        }
-        
-        /**
-         * Clear the search input and reset to show all videos
-         */
-        function clearSearch() {
-            searchInput.value = '';
-            clearSearchBtn.style.display = 'none';
-            isSearchActive = false;
-            
-            // Clear existing videos
-            videoContainer.innerHTML = '';
-            
-            // Load all videos (with location sorting if active)
-            let videosToLoad = allVideos;
-            
-            if (isLocationSortActive && userLocation) {
-                videosToLoad = sortVideosByLocation(videosToLoad, userLocation);
-            }
-            
-            loadVideos(videosToLoad);
-        }
-        
-        // Add event listeners for search
-        if (searchInput) {
-            searchInput.addEventListener('input', handleSearch);
-            clearSearchBtn.addEventListener('click', clearSearch);
-        }
-        
-        /**
-         * Load videos into the container
-         * @param {Array} videosToLoad - The videos to display
-         */
-        function loadVideos(videosToLoad) {
-            // Create and append video elements
-            videosToLoad.forEach(video => {
-                // Create video item container
-                const videoItem = document.createElement('div');
-                videoItem.className = 'video-item';
-                
-                // Create video title that's clickable
-                const videoTitle = document.createElement('h3');
-                videoTitle.textContent = video.name;
-                videoTitle.className = 'video-title';
-                videoTitle.addEventListener('click', function() {
+                const viewButton = document.createElement('button');
+                viewButton.className = 'map-popup-button';
+                viewButton.innerHTML = '<i class="fa-solid fa-play"></i> View Camera';
+                viewButton.addEventListener('click', function() {
                     openCameraModal(video);
                 });
-                videoItem.appendChild(videoTitle);
+                popupContent.appendChild(viewButton);
                 
-                // Create link container
-                const linkContainer = document.createElement('div');
-                linkContainer.className = 'link-container';
-                
-                // Add map link if coordinates are available
-                if (video.latitude && video.longitude) {
-                    const mapLink = document.createElement('a');
-                    mapLink.href = 'javascript:void(0);'; // Use JavaScript void to prevent page navigation
-                    mapLink.className = 'map-link';
-                    mapLink.innerHTML = '<i class="fa-solid fa-map-location-dot"></i> Map';
-                    mapLink.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        openMapModal(video);
-                    });
-                    linkContainer.appendChild(mapLink);
-                }
-                
-                // Add the link container to the video item
-                videoItem.appendChild(linkContainer);
-                
-                // Add the video item to the main container
-                videoContainer.appendChild(videoItem);
+                // Bind popup to marker
+                marker.bindPopup(popupContent);
             });
             
-            // Hide loading message and show video container
+            // Store map and videos with coordinates in global variables for later use
+            window.map = map;
+            window.videosWithCoords = videosWithCoords;
+            
+            // Add event listener to locate me button
+            locateMeBtn.addEventListener('click', function() {
+                findUserLocation(map, videosWithCoords);
+            });
+            
+            // Hide loading message
             loadingMessage.style.display = 'none';
-            videoContainer.style.display = 'flex';
+            
+            // Check URL parameters on page load
+            checkUrlForCamera();
         }
         
-        // Load all videos initially
-        loadVideos(allVideos);
+        /**
+         * Find the user's location and update the map
+         * @param {L.Map} map - The Leaflet map object
+         * @param {Array} videosWithCoords - Array of videos with valid coordinates
+         */
+        function findUserLocation(map, videosWithCoords) {
+            // Add loading state to button
+            locateMeBtn.classList.add('loading');
+            locateMeBtn.innerHTML = '<i class="fa-solid fa-spinner"></i>';
+            
+            // Try to get user's location
+            map.locate({setView: false, maxZoom: 14});
+            
+            map.once('locationfound', function(e) {
+                // Remove loading state
+                locateMeBtn.classList.remove('loading');
+                locateMeBtn.classList.add('active');
+                locateMeBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
+                
+                // Remove existing user marker if any
+                if (window.userMarker) {
+                    map.removeLayer(window.userMarker);
+                }
+                
+                // Create a marker for user's location
+                const userIcon = L.divIcon({
+                    className: 'user-marker',
+                    html: '<i class="fa-solid fa-location-crosshairs"></i>',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+                
+                // Add user marker to map
+                window.userMarker = L.marker(e.latlng, { icon: userIcon })
+                    .addTo(map)
+                    .bindPopup("You are here")
+                    .openPopup();
+                
+                // Find closest camera to user's location
+                let closestCamera = null;
+                let closestDistance = Infinity;
+                
+                videosWithCoords.forEach(video => {
+                    const cameraLatLng = L.latLng(parseFloat(video.latitude), parseFloat(video.longitude));
+                    const distance = e.latlng.distanceTo(cameraLatLng);
+                    
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestCamera = video;
+                    }
+                });
+                
+                // Zoom to include both user location and closest camera
+                if (closestCamera) {
+                    const closestCameraLatLng = L.latLng(
+                        parseFloat(closestCamera.latitude), 
+                        parseFloat(closestCamera.longitude)
+                    );
+                    
+                    const bounds = L.latLngBounds([e.latlng, closestCameraLatLng]);
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                } else {
+                    // If no closest camera found, just zoom to user location
+                    map.setView(e.latlng, 14);
+                }
+            });
+            
+            map.once('locationerror', function(e) {
+                // Remove loading state
+                locateMeBtn.classList.remove('loading');
+                locateMeBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
+                
+                console.log('Location access denied or unavailable:', e);
+                
+                // Show error notification
+                showLocationError();
+            });
+        }
+        
+        /**
+         * Show location error notification
+         */
+        function showLocationError() {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'location-error-notification';
+            notification.innerHTML = `
+                <p>Location access denied. Please check your browser settings.</p>
+                <button class="close-notification">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+            
+            // Add to document
+            document.body.appendChild(notification);
+            
+            // Add event listener to close button
+            const closeBtn = notification.querySelector('.close-notification');
+            closeBtn.addEventListener('click', function() {
+                document.body.removeChild(notification);
+            });
+            
+            // Auto-remove after 5 seconds
+            setTimeout(function() {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 5000);
+        }
+        
+        /**
+         * Check URL parameters for camera
+         */
+        function checkUrlForCamera() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check for camera parameter
+            const cameraId = urlParams.get('camera');
+            if (cameraId && typeof allVideos !== 'undefined') {
+                const video = allVideos.find(v => v.name === decodeURIComponent(cameraId));
+                if (video) {
+                    openCameraModal(video);
+                }
+            }
+        }
+        
+        // Initialize the map with camera data
+        initMap(videos);
     })
     .catch(error => {
         console.error('Error fetching or processing video data:', error);

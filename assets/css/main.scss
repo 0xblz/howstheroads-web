@@ -631,3 +631,243 @@ main {
     transform: translate(-50%, 0);
   }
 }
+
+/* Map Container Styles */
+#map-container {
+  width: 100%;
+  height: 80vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Map Bottom Spacing */
+.map-bottom-spacing {
+  width: 100%;
+  height: 70px;
+  margin-bottom: 20px;
+}
+
+/* Map Popup Styles */
+.map-popup {
+  text-align: center;
+}
+
+.map-popup h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: var(--color-primary);
+  text-shadow: none;
+}
+
+.map-popup-button {
+  display: inline-block;
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  border: none;
+}
+
+.map-popup-button:hover {
+  background-color: var(--color-tertiary);
+}
+
+/* Custom Camera Marker */
+.camera-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(220, 53, 69, 0.9);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  color: white;
+  font-size: 18px;
+  transition: all 0.2s ease-in-out;
+  transform-origin: center bottom;
+  position: relative;
+}
+
+.camera-marker:hover {
+  transform: scale(1.1);
+  background-color: rgba(220, 53, 69, 1);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.5);
+}
+
+.camera-marker i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* User Location Marker */
+.user-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: rgba(13, 110, 253, 0.9);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  color: white;
+  font-size: 14px;
+  position: relative;
+}
+
+.user-marker::after {
+  content: '';
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  background-color: rgba(13, 110, 253, 0.3);
+  border-radius: 50%;
+  z-index: -1;
+  animation: pulse-blue 2s infinite;
+}
+
+.user-marker i {
+  margin-top: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulse-blue {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Leaflet Popup Customization */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+}
+
+.map-popup {
+  text-align: center;
+  padding: 12px 16px;
+  min-width: 180px;
+}
+
+.map-popup h3 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  text-shadow: none;
+  font-weight: 600;
+}
+
+.map-popup-button {
+  display: inline-block;
+  background-color: var(--color-primary);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.map-popup-button:hover {
+  background-color: var(--color-tertiary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.map-popup-button i {
+  margin-right: 5px;
+}
+
+.leaflet-popup-tip {
+  background-color: white;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Map Controls */
+.map-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locate-me-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  color: #333;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &.loading {
+    pointer-events: none;
+    animation: spin 1s linear infinite;
+  }
+  
+  &.active {
+    background-color: #3388ff;
+    color: white;
+  }
+  
+  i {
+    font-size: 18px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

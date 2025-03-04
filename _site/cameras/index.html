@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="not-homepage">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -119,28 +119,30 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="googlebot" content="noindex, nofollow">
 
-<div class="test-page-header">
-    <h1>Cameras</h1>    
-    <div class="search-container">
-        <div class="search-input-wrapper">
-            <i class="fa-solid fa-search search-icon"></i>
-            <input type="text" id="camera-search" class="search-input" placeholder="Search for cameras..." autocomplete="off">
-            <button id="clear-search" class="clear-search-btn" style="display: none;">
-                <i class="fa-solid fa-times"></i>
-            </button>
-        </div>
-        <button id="location-sort-btn" class="location-sort-btn" title="Sort cameras by distance from your location">
-            <i class="fa-solid fa-location-crosshairs"></i>
-        </button>
-    </div>
-</div>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <div id="loading-message" class="loading-message">
-    <h3>loading kansas city...</h3>
+    <h3>Loading Cameras...</h3>
 </div>
-<div class="video-container" id="video-container" style="display: none;">
-    <!-- Video items will be dynamically inserted here -->
+
+<!-- Map container -->
+<div id="map-container" style="display: none;">
+    <!-- The map will be inserted here -->
 </div> 
+
+<!-- Map controls - moved to bottom -->
+<div id="map-controls" class="map-controls" style="display: none;">
+    <button id="locate-me-btn" class="locate-me-btn" title="Find my location">
+        <i class="fa-solid fa-location-crosshairs"></i>
+    </button>
+</div>
+
+<!-- Add spacing at the bottom -->
+<div class="map-bottom-spacing"></div> 
     </main>
     <script src="/assets/js/main.js"></script>
 <script src="/assets/js/weather.js"></script>
