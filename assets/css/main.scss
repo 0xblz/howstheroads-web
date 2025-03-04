@@ -508,6 +508,50 @@ main {
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Camera Modal Styles */
+.camera-modal-content {
+  background-color: black;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.camera-modal-content h2 {
+  color: white;
+  text-shadow: none;
+  margin: 0;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+#camera-modal-video {
+  width: 100%;
+  height: 60vh;
+  display: block;
+  background-color: #000;
+  min-height: 50vh;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+.camera-modal-content .lightbox-close {
+  top: 0.5rem;
+  right: 0.75rem;
+  color: white;
+}
+
+.camera-modal-content .highlight {
+  margin-top: 1rem;
+  justify-content: center;
+}
+
 /* Feedback Lightbox Styles */
 .feedback-content {
   background-color: white;
@@ -558,6 +602,49 @@ main {
   top: 0;
   left: 0;
   z-index: 10;
+}
+
+/* Mini Map Styles */
+.mini-map-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 1.5rem 0;
+  text-align: center;
+  position: relative;
+}
+
+#mini-map {
+  width: 100%;
+  height: 420px;
+  border-radius: 1.5rem;
+  margin-bottom: 0;
+  overflow: hidden;
+  box-shadow: 0 1rem 2rem var(--color-primary);
+}
+
+.map-fullscreen-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 44px;
+  height: 44px;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 500;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  font-size: 1.2rem;
+}
+
+.map-fullscreen-button:hover {
+  background-color: var(--color-tertiary);
+  transform: scale(1.05);
 }
 
 /* Map Popup Styles */
@@ -628,6 +715,9 @@ main {
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
   padding: 0;
   overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(1rem) !important;
+  -webkit-backdrop-filter: blur(1rem) !important;
 }
 
 .leaflet-popup-content {
@@ -676,7 +766,9 @@ main {
 }
 
 .leaflet-popup-tip {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(1rem) !important;
+  -webkit-backdrop-filter: blur(1rem) !important;
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
 }
 
@@ -700,21 +792,24 @@ main {
   align-items: center;
   gap: 0.5rem;
   background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(1rem);
+  -webkit-backdrop-filter: blur(1rem);
   padding: 0.5rem 1rem;
-  border-radius: 2rem;
+  border-radius: 9999px;
   color: white;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .home-link:hover {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   opacity: 1;
 }
 

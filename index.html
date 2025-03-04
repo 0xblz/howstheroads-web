@@ -2,6 +2,12 @@
 layout: default
 ---
 
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <div class="app-download-container">
     <img src="appicon.png" alt="App Icon" class="app-icon">
     
@@ -34,6 +40,16 @@ layout: default
     <h3>Your go-to app for real-time traffic updates around Kansas City. Whether you're commuting, running errands, or planning your route, this app provides instant access to live feeds from traffic cameras across the metro area.</h3>
 
     <hr>
+
+    <!-- Mini Map Section -->
+    <div class="mini-map-container">
+        <div id="mini-map"></div>
+        <a href="/cameras" class="map-fullscreen-button" title="View Full Interactive Map">
+            <i class="fa-solid fa-expand"></i>
+        </a>
+    </div>
+
+    <hr>
     
     <p>
         <a href="#" id="feedback-link"><i class="fa-solid fa-comment"></i> feedback</a> 
@@ -50,6 +66,15 @@ layout: default
     </div>
 </div>
 
+<!-- Camera Modal -->
+<div id="camera-modal" class="lightbox">
+    <div class="lightbox-content camera-modal-content">
+        <h2 id="camera-modal-title">Camera Name</h2>
+        <video id="camera-modal-video" controls autoplay playsinline muted></video>
+        <span class="lightbox-close">&times;</span>
+    </div>
+</div>
+
 <!-- Feedback Lightbox -->
 <div id="feedback-lightbox" class="lightbox">
     <div class="lightbox-content feedback-content">
@@ -58,3 +83,146 @@ layout: default
         <span class="lightbox-close">&times;</span>
     </div>
 </div>
+
+<!-- Mini Map Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the mini map with a higher zoom level (12 instead of 10)
+        const miniMap = L.map('mini-map', {
+            zoomControl: false,  // Disable default zoom control
+            scrollWheelZoom: false
+        }).setView([39.0997, -94.5786], 12);
+        
+        // Add zoom control to bottom right instead of top left
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(miniMap);
+        
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(miniMap);
+        
+        // Get camera modal elements
+        const cameraModal = document.getElementById('camera-modal');
+        const cameraModalTitle = document.getElementById('camera-modal-title');
+        const cameraModalVideo = document.getElementById('camera-modal-video');
+        const cameraModalClose = cameraModal.querySelector('.lightbox-close');
+        
+        // Function to open camera modal
+        function openCameraModal(video) {
+            cameraModalTitle.textContent = video.name;
+            
+            // Set the video source
+            cameraModalVideo.src = video.url;
+            cameraModalVideo.load();
+            
+            // Try to play the video
+            const playPromise = cameraModalVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Autoplay prevented:', error);
+                });
+            }
+            
+            // Update URL with camera name for sharing
+            const cameraId = encodeURIComponent(video.name);
+            window.history.pushState({type: 'camera', id: cameraId}, '', `?camera=${cameraId}`);
+            
+            // Show the modal
+            cameraModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        // Function to close camera modal
+        function closeCameraModal() {
+            cameraModal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+            
+            // Clear the video source
+            cameraModalVideo.pause();
+            cameraModalVideo.src = '';
+            cameraModalVideo.load();
+            
+            // Reset URL
+            window.history.pushState({}, '', window.location.pathname);
+        }
+        
+        // Add close event listener
+        cameraModalClose.addEventListener('click', closeCameraModal);
+        
+        // Fetch camera data
+        fetch('https://0xblz.github.io/docs/kansascity.json')
+            .then(response => response.json())
+            .then(data => {
+                // Extract the videos array from the response
+                const videos = data.videos || data;
+                
+                // Store videos globally for URL parameter handling
+                window.allVideos = videos;
+                
+                // Filter videos with valid coordinates
+                const videosWithCoords = videos.filter(video => 
+                    video.latitude && video.longitude && 
+                    !isNaN(parseFloat(video.latitude)) && 
+                    !isNaN(parseFloat(video.longitude))
+                );
+                
+                // Add markers for each camera
+                videosWithCoords.forEach(video => {
+                    const lat = parseFloat(video.latitude);
+                    const lng = parseFloat(video.longitude);
+                    
+                    // Create custom marker icon
+                    const cameraIcon = L.divIcon({
+                        className: 'camera-marker',
+                        html: '<i class="fa-solid fa-video"></i>',
+                        iconSize: [30, 30], // Slightly smaller for the mini map
+                        iconAnchor: [15, 15]
+                    });
+                    
+                    // Create marker
+                    const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(miniMap);
+                    
+                    // Create popup content
+                    const popupContent = document.createElement('div');
+                    popupContent.className = 'map-popup';
+                    
+                    const title = document.createElement('h3');
+                    title.textContent = video.name;
+                    popupContent.appendChild(title);
+                    
+                    const viewButton = document.createElement('button');
+                    viewButton.className = 'map-popup-button';
+                    viewButton.innerHTML = '<i class="fa-solid fa-play"></i> View Camera';
+                    viewButton.addEventListener('click', function() {
+                        // Open camera modal instead of redirecting
+                        openCameraModal(video);
+                    });
+                    popupContent.appendChild(viewButton);
+                    
+                    // Bind popup to marker
+                    marker.bindPopup(popupContent);
+                });
+                
+                // Check URL parameters on page load
+                checkUrlForCamera();
+            })
+            .catch(error => {
+                console.error('Error fetching camera data:', error);
+            });
+            
+        // Function to check URL for camera parameter
+        function checkUrlForCamera() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cameraName = urlParams.get('camera');
+            
+            if (cameraName && window.allVideos) {
+                const video = window.allVideos.find(v => v.name === decodeURIComponent(cameraName));
+                if (video) {
+                    openCameraModal(video);
+                }
+            }
+        }
+    });
+</script>
