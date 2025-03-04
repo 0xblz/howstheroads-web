@@ -477,6 +477,16 @@ main {
   padding: 1rem;
 }
 
+/* Camera modal should appear above other lightboxes */
+#camera-modal {
+  z-index: 1100;
+}
+
+/* Feedback modal should also appear above other lightboxes */
+#feedback-lightbox {
+  z-index: 1100;
+}
+
 .lightbox.active {
   display: flex;
 }

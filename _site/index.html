@@ -279,6 +279,9 @@
             fullMapModal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent scrolling
             
+            // Mark that the user explicitly opened the map
+            sessionStorage.setItem('userOpenedMap', 'true');
+            
             // Initialize the full map
             initializeFullMap();
         }
@@ -330,12 +333,16 @@
                 viewButton.className = 'map-popup-button';
                 viewButton.innerHTML = '<i class="fa-solid fa-play"></i> View Camera';
                 viewButton.addEventListener('click', function() {
-                    // Close the full map modal if open
+                    // Store the state of the full map modal and that it was explicitly opened by user
                     if (fullMapModal.classList.contains('active')) {
-                        closeFullMapModal();
+                        sessionStorage.setItem('mapModalOpen', 'true');
+                        sessionStorage.setItem('userOpenedMap', 'true');
+                    } else {
+                        sessionStorage.removeItem('mapModalOpen');
+                        sessionStorage.removeItem('userOpenedMap');
                     }
                     
-                    // Open camera modal
+                    // Open camera modal without closing the map modal
                     openCameraModal(video);
                 });
                 popupContent.appendChild(viewButton);
@@ -365,7 +372,12 @@
             const cameraId = encodeURIComponent(video.name);
             window.history.pushState({type: 'camera', id: cameraId}, '', `?camera=${cameraId}`);
             
-            // Show the modal
+            // If map modal is open, temporarily hide it (but don't close it)
+            if (fullMapModal.classList.contains('active')) {
+                fullMapModal.style.display = 'none';
+            }
+            
+            // Show the camera modal
             cameraModal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent scrolling
         }
@@ -373,15 +385,41 @@
         // Function to close camera modal
         function closeCameraModal() {
             cameraModal.classList.remove('active');
-            document.body.style.overflow = ''; // Restore scrolling
             
             // Clear the video source
             cameraModalVideo.pause();
             cameraModalVideo.src = '';
             cameraModalVideo.load();
             
-            // Reset URL
-            window.history.pushState({}, '', window.location.pathname);
+            // Check if map modal should be open AND was explicitly opened by the user
+            if (sessionStorage.getItem('mapModalOpen') === 'true' && 
+                sessionStorage.getItem('userOpenedMap') === 'true') {
+                // Restore the map modal if it was temporarily hidden
+                if (fullMapModal.style.display === 'none') {
+                    fullMapModal.style.display = '';
+                }
+                
+                // Keep the map modal open and body scroll disabled
+                document.body.style.overflow = 'hidden';
+                
+                // Make sure the map modal is still active
+                if (!fullMapModal.classList.contains('active')) {
+                    openFullMapModal();
+                }
+                
+                // Refresh the full map if needed
+                if (fullMap) {
+                    setTimeout(() => {
+                        fullMap.invalidateSize();
+                    }, 100);
+                }
+            } else {
+                // Restore scrolling if map modal is not open
+                document.body.style.overflow = '';
+                
+                // Reset URL only if map modal is not open
+                window.history.pushState({}, '', window.location.pathname);
+            }
         }
         
         // Add close event listener
@@ -415,6 +453,8 @@
             if (cameraName && window.allVideos) {
                 const video = window.allVideos.find(v => v.name === decodeURIComponent(cameraName));
                 if (video) {
+                    // Clear any previous map state when opening from a direct link
+                    sessionStorage.removeItem('userOpenedMap');
                     openCameraModal(video);
                 }
             }
