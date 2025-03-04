@@ -12,7 +12,7 @@
  * Fetch traffic camera data from JSON endpoint and populate the video container
  * The JSON contains an array of camera objects with name, URL, latitude, and longitude
  */
-fetch('https://0xblz.github.io/docs/kansascity_all.json')
+fetch('https://0xblz.github.io/docs/kansascity.json')
     .then(response => response.json())
     .then(data => {
         // Extract the videos array from the response
