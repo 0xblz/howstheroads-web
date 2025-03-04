@@ -14,21 +14,17 @@ not_homepage: true
 <!-- Leaflet JavaScript -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<div id="loading-message" class="loading-message">
+<!-- Simple header with home link -->
+<div class="map-header">
+  <a href="/" class="home-link">
+    <i class="fa-solid fa-house"></i> Home
+  </a>
+</div>
+
+<!-- Map container - now full screen -->
+<div id="map-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10;"></div>
+
+<!-- Loading overlay that will be hidden when map loads -->
+<div id="loading-message" class="loading-message" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; background-color: var(--color-primary);">
     <h3>Loading Cameras...</h3>
-</div>
-
-<!-- Map container -->
-<div id="map-container" style="display: none;">
-    <!-- The map will be inserted here -->
 </div> 
-
-<!-- Map controls - moved to bottom -->
-<div id="map-controls" class="map-controls" style="display: none;">
-    <button id="locate-me-btn" class="locate-me-btn" title="Find my location">
-        <i class="fa-solid fa-location-crosshairs"></i>
-    </button>
-</div>
-
-<!-- Add spacing at the bottom -->
-<div class="map-bottom-spacing"></div> 

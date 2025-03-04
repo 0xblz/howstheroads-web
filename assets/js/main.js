@@ -31,9 +31,7 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
         // Get DOM references
         const videoContainer = document.getElementById('video-container');
         const mapContainer = document.getElementById('map-container');
-        const mapControls = document.getElementById('map-controls');
         const loadingMessage = document.getElementById('loading-message');
-        const locateMeBtn = document.getElementById('locate-me-btn');
         
         // If we're not on the cameras page, don't proceed
         if (!mapContainer || !loadingMessage) {
@@ -179,9 +177,8 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
         
         // Initialize the map
         function initMap(videos) {
-            // Show map container and controls
-            mapContainer.style.display = 'block';
-            mapControls.style.display = 'flex';
+            // Show map container - no need to change display since it's now visible by default
+            // mapContainer.style.display = 'block';
             
             // Create map centered on Kansas City
             const map = L.map('map-container').setView([39.0997, -94.5786], 11);
@@ -238,126 +235,11 @@ fetch('https://0xblz.github.io/docs/kansascity.json')
             window.map = map;
             window.videosWithCoords = videosWithCoords;
             
-            // Add event listener to locate me button
-            locateMeBtn.addEventListener('click', function() {
-                findUserLocation(map, videosWithCoords);
-            });
-            
             // Hide loading message
             loadingMessage.style.display = 'none';
             
             // Check URL parameters on page load
             checkUrlForCamera();
-        }
-        
-        /**
-         * Find the user's location and update the map
-         * @param {L.Map} map - The Leaflet map object
-         * @param {Array} videosWithCoords - Array of videos with valid coordinates
-         */
-        function findUserLocation(map, videosWithCoords) {
-            // Add loading state to button
-            locateMeBtn.classList.add('loading');
-            locateMeBtn.innerHTML = '<i class="fa-solid fa-spinner"></i>';
-            
-            // Try to get user's location
-            map.locate({setView: false, maxZoom: 14});
-            
-            map.once('locationfound', function(e) {
-                // Remove loading state
-                locateMeBtn.classList.remove('loading');
-                locateMeBtn.classList.add('active');
-                locateMeBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                
-                // Remove existing user marker if any
-                if (window.userMarker) {
-                    map.removeLayer(window.userMarker);
-                }
-                
-                // Create a marker for user's location
-                const userIcon = L.divIcon({
-                    className: 'user-marker',
-                    html: '<i class="fa-solid fa-location-crosshairs"></i>',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                });
-                
-                // Add user marker to map
-                window.userMarker = L.marker(e.latlng, { icon: userIcon })
-                    .addTo(map)
-                    .bindPopup("You are here")
-                    .openPopup();
-                
-                // Find closest camera to user's location
-                let closestCamera = null;
-                let closestDistance = Infinity;
-                
-                videosWithCoords.forEach(video => {
-                    const cameraLatLng = L.latLng(parseFloat(video.latitude), parseFloat(video.longitude));
-                    const distance = e.latlng.distanceTo(cameraLatLng);
-                    
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestCamera = video;
-                    }
-                });
-                
-                // Zoom to include both user location and closest camera
-                if (closestCamera) {
-                    const closestCameraLatLng = L.latLng(
-                        parseFloat(closestCamera.latitude), 
-                        parseFloat(closestCamera.longitude)
-                    );
-                    
-                    const bounds = L.latLngBounds([e.latlng, closestCameraLatLng]);
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                } else {
-                    // If no closest camera found, just zoom to user location
-                    map.setView(e.latlng, 14);
-                }
-            });
-            
-            map.once('locationerror', function(e) {
-                // Remove loading state
-                locateMeBtn.classList.remove('loading');
-                locateMeBtn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>';
-                
-                console.log('Location access denied or unavailable:', e);
-                
-                // Show error notification
-                showLocationError();
-            });
-        }
-        
-        /**
-         * Show location error notification
-         */
-        function showLocationError() {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = 'location-error-notification';
-            notification.innerHTML = `
-                <p>Location access denied. Please check your browser settings.</p>
-                <button class="close-notification">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            `;
-            
-            // Add to document
-            document.body.appendChild(notification);
-            
-            // Add event listener to close button
-            const closeBtn = notification.querySelector('.close-notification');
-            closeBtn.addEventListener('click', function() {
-                document.body.removeChild(notification);
-            });
-            
-            // Auto-remove after 5 seconds
-            setTimeout(function() {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 5000);
         }
         
         /**
