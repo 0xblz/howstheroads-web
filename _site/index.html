@@ -391,6 +391,9 @@
             cameraModalVideo.src = '';
             cameraModalVideo.load();
             
+            // Always reset URL when closing camera modal
+            window.history.pushState({}, '', window.location.pathname);
+            
             // Check if map modal should be open AND was explicitly opened by the user
             if (sessionStorage.getItem('mapModalOpen') === 'true' && 
                 sessionStorage.getItem('userOpenedMap') === 'true') {
@@ -416,14 +419,38 @@
             } else {
                 // Restore scrolling if map modal is not open
                 document.body.style.overflow = '';
-                
-                // Reset URL only if map modal is not open
-                window.history.pushState({}, '', window.location.pathname);
             }
         }
         
         // Add close event listener
         cameraModalClose.addEventListener('click', closeCameraModal);
+        
+        // Add click-outside-to-close functionality for all lightboxes
+        document.addEventListener('click', function(event) {
+            // Handle camera modal
+            if (event.target === cameraModal) {
+                closeCameraModal();
+            }
+            
+            // Handle full map modal
+            if (event.target === fullMapModal) {
+                closeFullMapModal();
+            }
+            
+            // Handle image lightbox
+            const lightbox = document.getElementById('lightbox');
+            if (event.target === lightbox) {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            // Handle feedback lightbox
+            const feedbackLightbox = document.getElementById('feedback-lightbox');
+            if (event.target === feedbackLightbox) {
+                feedbackLightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
         
         // Fetch camera data
         fetch('https://0xblz.github.io/docs/kansascity.json')

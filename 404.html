@@ -1,13 +1,52 @@
 ---
 layout: default
-title: 404
+title: 404 - Page Not Found
+permalink: /404.html
 ---
 
 <div class="app-download-container">
     <img src="/appicon.png" alt="App Icon" class="app-icon">
+    
     <h1>404</h1>
+    <h2>Page Not Found</h2>
+    
     <hr>
-    <h3>Page not found</h3>
+    
+    <h3>Sorry, the page you're looking for doesn't exist.</h3>
+    
+    <a href="/" class="highlight highlight-app">
+        <i class="fa-solid fa-house"></i> Return to Homepage
+    </a>
+
     <hr>
-    <p><a href="/"><i class="fa-solid fa-house"></i> go home</a></p>
+    
+    <p>
+        <a href="#" id="feedback-link"><i class="fa-solid fa-comment"></i> feedback</a> 
+        &bull; 
+        <a href="/privacy"><i class="fa-solid fa-shield-halved"></i> privacy</a> 
+    </p>
 </div>
+
+<script>
+    // Ensure the feedback lightbox functionality works on the 404 page
+    document.addEventListener('DOMContentLoaded', function() {
+        const feedbackLink = document.getElementById('feedback-link');
+        const feedbackLightbox = document.getElementById('feedback-lightbox');
+        
+        if (feedbackLink && feedbackLightbox) {
+            feedbackLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                feedbackLightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            const closeFeedback = feedbackLightbox.querySelector('.lightbox-close');
+            if (closeFeedback) {
+                closeFeedback.addEventListener('click', function() {
+                    feedbackLightbox.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+        }
+    });
+</script>
