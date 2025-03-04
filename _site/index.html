@@ -157,9 +157,9 @@
     <!-- Mini Map Section -->
     <div class="mini-map-container">
         <div id="mini-map"></div>
-        <a href="/cameras" class="map-fullscreen-button" title="View Full Interactive Map">
+        <button class="map-fullscreen-button" id="open-fullmap-button" title="View Full Interactive Map">
             <i class="fa-solid fa-expand"></i>
-        </a>
+        </button>
     </div>
 
     <hr>
@@ -195,6 +195,15 @@
     </div>
 </div>
 
+<!-- Full Map Lightbox -->
+<div id="fullmap-modal" class="lightbox">
+    <div class="lightbox-content fullmap-modal-content">
+        <h2>Traffic Cameras in Kansas City</h2>
+        <div id="full-map"></div>
+        <span class="lightbox-close">&times;</span>
+    </div>
+</div>
+
 <!-- Feedback Lightbox -->
 <div id="feedback-lightbox" class="lightbox">
     <div class="lightbox-content feedback-content">
@@ -218,9 +227,10 @@
             position: 'bottomright'
         }).addTo(miniMap);
         
-        // Add OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // Add Google Maps with traffic as the base layer
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps',
+            maxZoom: 20
         }).addTo(miniMap);
         
         // Get camera modal elements
@@ -228,6 +238,112 @@
         const cameraModalTitle = document.getElementById('camera-modal-title');
         const cameraModalVideo = document.getElementById('camera-modal-video');
         const cameraModalClose = cameraModal.querySelector('.lightbox-close');
+        
+        // Get full map modal elements
+        const fullMapModal = document.getElementById('fullmap-modal');
+        const fullMapModalClose = fullMapModal.querySelector('.lightbox-close');
+        const openFullMapButton = document.getElementById('open-fullmap-button');
+        
+        // Full map instance
+        let fullMap = null;
+        
+        // Function to initialize the full map
+        function initializeFullMap() {
+            if (fullMap) return; // Don't initialize if already exists
+            
+            // Create the full map
+            fullMap = L.map('full-map', {
+                zoomControl: true,
+                scrollWheelZoom: true
+            }).setView([39.0997, -94.5786], 12);
+            
+            // Add Google Maps with traffic as the base layer
+            L.tileLayer('https://mt1.google.com/vt/lyrs=m@221097413,traffic&x={x}&y={y}&z={z}', {
+                attribution: '&copy; Google Maps',
+                maxZoom: 20
+            }).addTo(fullMap);
+            
+            // If we have camera data, add markers to the full map
+            if (window.allVideos) {
+                addCameraMarkersToMap(fullMap, window.allVideos);
+            }
+            
+            // Invalidate size to ensure proper rendering
+            setTimeout(() => {
+                fullMap.invalidateSize();
+            }, 100);
+        }
+        
+        // Function to open full map modal
+        function openFullMapModal() {
+            fullMapModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            
+            // Initialize the full map
+            initializeFullMap();
+        }
+        
+        // Function to close full map modal
+        function closeFullMapModal() {
+            fullMapModal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+        
+        // Add event listeners for full map modal
+        openFullMapButton.addEventListener('click', openFullMapModal);
+        fullMapModalClose.addEventListener('click', closeFullMapModal);
+        
+        // Function to add camera markers to a map
+        function addCameraMarkersToMap(map, videos) {
+            // Filter videos with valid coordinates
+            const videosWithCoords = videos.filter(video => 
+                video.latitude && video.longitude && 
+                !isNaN(parseFloat(video.latitude)) && 
+                !isNaN(parseFloat(video.longitude))
+            );
+            
+            // Add markers for each camera
+            videosWithCoords.forEach(video => {
+                const lat = parseFloat(video.latitude);
+                const lng = parseFloat(video.longitude);
+                
+                // Create custom marker icon
+                const cameraIcon = L.divIcon({
+                    className: 'camera-marker',
+                    html: '<i class="fa-solid fa-video"></i>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
+                
+                // Create marker
+                const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(map);
+                
+                // Create popup content
+                const popupContent = document.createElement('div');
+                popupContent.className = 'map-popup';
+                
+                const title = document.createElement('h3');
+                title.textContent = video.name;
+                popupContent.appendChild(title);
+                
+                const viewButton = document.createElement('button');
+                viewButton.className = 'map-popup-button';
+                viewButton.innerHTML = '<i class="fa-solid fa-play"></i> View Camera';
+                viewButton.addEventListener('click', function() {
+                    // Close the full map modal if open
+                    if (fullMapModal.classList.contains('active')) {
+                        closeFullMapModal();
+                    }
+                    
+                    // Open camera modal
+                    openCameraModal(video);
+                });
+                popupContent.appendChild(viewButton);
+                
+                // Bind popup to marker
+                marker.bindPopup(popupContent);
+            });
+        }
         
         // Function to open camera modal
         function openCameraModal(video) {
@@ -281,49 +397,8 @@
                 // Store videos globally for URL parameter handling
                 window.allVideos = videos;
                 
-                // Filter videos with valid coordinates
-                const videosWithCoords = videos.filter(video => 
-                    video.latitude && video.longitude && 
-                    !isNaN(parseFloat(video.latitude)) && 
-                    !isNaN(parseFloat(video.longitude))
-                );
-                
-                // Add markers for each camera
-                videosWithCoords.forEach(video => {
-                    const lat = parseFloat(video.latitude);
-                    const lng = parseFloat(video.longitude);
-                    
-                    // Create custom marker icon
-                    const cameraIcon = L.divIcon({
-                        className: 'camera-marker',
-                        html: '<i class="fa-solid fa-video"></i>',
-                        iconSize: [30, 30], // Slightly smaller for the mini map
-                        iconAnchor: [15, 15]
-                    });
-                    
-                    // Create marker
-                    const marker = L.marker([lat, lng], { icon: cameraIcon }).addTo(miniMap);
-                    
-                    // Create popup content
-                    const popupContent = document.createElement('div');
-                    popupContent.className = 'map-popup';
-                    
-                    const title = document.createElement('h3');
-                    title.textContent = video.name;
-                    popupContent.appendChild(title);
-                    
-                    const viewButton = document.createElement('button');
-                    viewButton.className = 'map-popup-button';
-                    viewButton.innerHTML = '<i class="fa-solid fa-play"></i> View Camera';
-                    viewButton.addEventListener('click', function() {
-                        // Open camera modal instead of redirecting
-                        openCameraModal(video);
-                    });
-                    popupContent.appendChild(viewButton);
-                    
-                    // Bind popup to marker
-                    marker.bindPopup(popupContent);
-                });
+                // Add markers to mini map
+                addCameraMarkersToMap(miniMap, videos);
                 
                 // Check URL parameters on page load
                 checkUrlForCamera();
