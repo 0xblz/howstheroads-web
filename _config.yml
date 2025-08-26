@@ -1,0 +1,28 @@
+# Site settings
+title: How's the roads?
+description: Your go-to app for real-time traffic updates around KCMO. Whether you're commuting, running errands, or planning your route, this app provides instant access to live feeds from traffic cameras across the metro area.
+url: "https://howstheroads.com"
+keywords: "real-time traffic, traffic updates, KCMO traffic, Kansas City traffic, live traffic cameras, metro area traffic, commute app, traffic app, road conditions, traffic alerts, traffic routes, KC roads, traffic feeds, driving app, live road updates, traffic monitoring, traffic info Kansas City, commuter app, navigation help, travel planning"
+baseurl: ""
+version: 1.1
+
+# Build settings
+markdown: kramdown
+permalink: pretty
+exclude: [README.md, Gemfile, Gemfile.lock]
+
+# Collections
+collections:
+  projects:
+    output: true
+    permalink: /projects/:path/
+  experiences:
+    output: false
+
+# Sass/SCSS
+sass:
+  sass_dir: _sass
+  style: compressed
+
+plugins:
+  - jekyll-redirect-from 

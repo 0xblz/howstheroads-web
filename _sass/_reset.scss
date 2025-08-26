@@ -1,0 +1,21 @@
+// Reset
+*,
+html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+// Selection styling
+::-moz-selection {
+    color: white;
+    background: var(--primary-color);
+}
+
+::selection {
+    color: white;
+    background: var(--primary-color);
+} 
